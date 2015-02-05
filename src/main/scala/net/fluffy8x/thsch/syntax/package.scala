@@ -1,0 +1,47 @@
+package net.fluffy8x.thsch
+
+package object syntax {
+  /**
+   * Given an <code>Iterable[(A) => Option[A]]</code>,
+   * gives <code>Some(value)</code> if each one returns a <code>Some</code>;
+   * otherwise a <code>None</code>.
+   */
+  def allOrNothing[A](hoops: Iterable[(A) => Option[A]])(seed: A): Option[A] = {
+    var res = seed
+    for (hoop <- hoops) {
+      hoop(res) match {
+        case Some(r) => res = r
+        case None => return None
+      }
+    }
+    Some(res)
+  }
+  /**
+   * Acts like <code>allOrNothing</code>, but if one function returns a
+   * <code>None</code>, then control is passed back to the previous function
+   * if present.
+   */
+  def zippedSequence[A](hoops: Seq[(A) => Option[A]])(seed: A): Option[A] = {
+    var it = hoops
+    var res = seed
+    var prevs: List[(A) => Option[A]] = Nil
+    while (!it.isEmpty) {
+      val hoop = it.head
+      it = it.tail
+      hoop(res) match {
+        case Some(r) => {
+          res = r
+          prevs = hoop :: prevs
+        }
+        case None => prevs match {
+          case Nil => return None
+          case prev :: others => {
+            it = prev +: it
+            prevs = others
+          }
+        }
+      }
+    }
+    Some(res)
+  }
+}
