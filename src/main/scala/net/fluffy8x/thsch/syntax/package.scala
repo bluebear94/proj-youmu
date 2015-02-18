@@ -48,4 +48,8 @@ package object syntax {
   }
   def coroutine(u: => Unit) = Coroutines.coroutine(u)
   def yld = Coroutines.yld
+  implicit def singleToOOM[A](a: A) = OneOrMore(a)
+  implicit def listToOOM[A](as: List[A]) = OneOrMore(as)
+  implicit def oomToSingle[A](oom: OneOrMore[A]) = oom.underlying.head
+  implicit def oomToList[A](oom: OneOrMore[A]) = oom.underlying
 }
