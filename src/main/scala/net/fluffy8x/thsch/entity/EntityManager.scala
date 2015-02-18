@@ -12,4 +12,5 @@ class EntityManager extends Child[EntityManager, Game] with Parent[EntityManager
   // var player: OneOrMore[Player]
   // var enemy: Set[Enemy]
   // var boss: OneOrMore[Boss]
+  // var items = Set[Item]
 }

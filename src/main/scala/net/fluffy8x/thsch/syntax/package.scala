@@ -52,4 +52,7 @@ package object syntax {
   implicit def listToOOM[A](as: List[A]) = OneOrMore(as)
   implicit def oomToSingle[A](oom: OneOrMore[A]) = oom.underlying.head
   implicit def oomToList[A](oom: OneOrMore[A]) = oom.underlying
+  def between(a: Double, b: Double, c: Double) = {
+    a >= (b min c) && a < (b max c)
+  }
 }

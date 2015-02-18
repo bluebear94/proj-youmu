@@ -8,5 +8,8 @@ trait Entity {
     this match {
       case p: Parent[_, _] => p.deleteChildren()
     }
+    onDelete()
   }
+  def tick()
+  protected def onDelete()
 }

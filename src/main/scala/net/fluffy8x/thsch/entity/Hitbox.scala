@@ -2,6 +2,10 @@ package net.fluffy8x.thsch.entity
 
 import net.fluffy8x.thsch.base._
 
+/**
+ * A hitbox. Represents an area on which an entity can be hit.
+ * @author Fluffy8x
+ */
 trait Hitbox {
   def collides(that: Hitbox): Boolean
   def offset(v: Vector2D): Hitbox

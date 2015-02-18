@@ -10,6 +10,11 @@ trait Collidable extends Entity {
   def isInvincible: Boolean
 }
 
+/**
+ * Defines an entity with a set position.
+ * Most instances of {@link Collidable} will be instances
+ * of {@link Movable} as well.
+ */
 trait Movable extends Collidable {
   var s: Point2D
   var v: Vector2D

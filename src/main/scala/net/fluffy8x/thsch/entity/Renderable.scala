@@ -13,6 +13,10 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
     if (isVisible) _render()
   }
   protected def _render(): Unit
+  def tick() {
+    super.tick()
+    render()
+  }
   var isVisible = false
   def basis: CoordinateBasis
   def renderPriority: Double

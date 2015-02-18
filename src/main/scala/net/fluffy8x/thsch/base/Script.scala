@@ -6,6 +6,7 @@ import continuations.Coroutines
  * A trait for scripts.
  * The traditional script that is the same, without parameters or return
  * values, would be described as <code>Script[Unit, Unit]</code>.
+ * However, scripts can pass parameters or return results.
  * @author Fluffy8x
  */
 trait Script[Params, Result] {

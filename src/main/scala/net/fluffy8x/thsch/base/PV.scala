@@ -1,5 +1,7 @@
 package net.fluffy8x.thsch.base
 
+import net.fluffy8x.thsch.syntax._
+
 /**
  * A point in 2D space.
  * Points are assumed to be coordinate-agnostic -
@@ -104,4 +106,10 @@ object Vector3D {
 case class DoubleWithVectorOps(s: Double) extends AnyVal {
   def *(v: Vector2D) = v * s
   def *(v: Vector3D) = v * s
+}
+
+case class BoundsRect(p1: Point2D, p2: Point2D) {
+  def contains(p: Point2D) = {
+    between(p.x, p1.x, p2.x) && between(p.y, p1.y, p2.y)
+  }
 }
