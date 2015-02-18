@@ -1,5 +1,7 @@
 package net.fluffy8x.thsch
 
+import continuations._
+
 package object syntax {
   /**
    * Given an <code>Iterable[(A) => Option[A]]</code>,
@@ -44,4 +46,6 @@ package object syntax {
     }
     Some(res)
   }
+  def coroutine(u: => Unit) = Coroutines.coroutine(u)
+  def yld = Coroutines.yld
 }

@@ -4,6 +4,7 @@ import net.fluffy8x.thsch.base._
 
 trait Hitbox {
   def collides(that: Hitbox): Boolean
+  def offset(v: Vector2D): Hitbox
 }
 
 case class Line(a: Point2D, b: Point2D) extends Hitbox {
@@ -26,6 +27,7 @@ case class Line(a: Point2D, b: Point2D) extends Hitbox {
     }
     case p: Polygon => p collides this
   }
+  def offset(v: Vector2D) = Line(a + v, b + v)
 }
 
 case class Circle(c: Point2D, r: Double) extends Hitbox {
@@ -35,6 +37,7 @@ case class Circle(c: Point2D, r: Double) extends Hitbox {
     }
     case x => x collides this
   }
+  def offset(v: Vector2D) = Circle(c + v, r);
 }
 
 case class Polygon(vertices: List[Point2D], closed: Boolean = true)
@@ -44,4 +47,10 @@ case class Polygon(vertices: List[Point2D], closed: Boolean = true)
     case List(a, b) => Line(a, b)
   }.toList
   def collides(that: Hitbox) = edges.exists(_ collides that)
+  def offset(v: Vector2D) = Polygon(vertices.map(_ + v), closed)
+}
+
+case object NullH extends Hitbox {
+  def collides(that: Hitbox) = false
+  def offset(v: Vector2D) = NullH
 }

@@ -3,8 +3,12 @@ package net.fluffy8x.thsch.entity
 import net.fluffy8x.thsch.base._
 import net.fluffy8x.thsch.base.Point3D
 
+/**
+ * Describes an entity that can be rendered.
+ */
 trait Renderable extends Entity with Child[Renderable, EntityManager] {
   var position: Point3D
+  var angle: Angle
   def render() {
     if (isVisible) _render()
   }
@@ -12,6 +16,10 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
   var isVisible = false
   def basis: CoordinateBasis
   def renderPriority: Double
+  /**
+   * Returns the upper left corner based on the current {@link CoordinateBasis}
+   * and render priority.
+   */
   def upperLeft = basis match {
     case CoordinateBasis.Window => Point2D(0, 0)
     case CoordinateBasis.Frame => {

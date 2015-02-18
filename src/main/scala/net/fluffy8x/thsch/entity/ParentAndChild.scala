@@ -7,10 +7,18 @@ import scala.collection.mutable.Set
 
 trait Parent[P <: Parent[P, C], C <: Child[C, P]] { this: P =>
   protected val children: scala.collection.mutable.Set[C]
+  /**
+   * Adds <code>c</code> to the list of this instance's children
+   * and sets the child's parent as this instance.
+   */
   def register(c: C) = {
     children += c
     c.parent = this
   }
+  /**
+   * Calls {@link Entity}<code>.delete</code> on all children that are
+   * instances of {@link Entity}.
+   */
   def deleteChildren(): Unit = children foreach {
     case c: Entity => c.delete()
   }
