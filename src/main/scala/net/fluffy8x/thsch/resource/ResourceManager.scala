@@ -1,4 +1,4 @@
-package net.fluffy8x.thsch.base
+package net.fluffy8x.thsch.resource
 
 import org.lwjgl.glfw._
 import scala.collection.mutable.HashMap
@@ -9,5 +9,5 @@ import scala.collection.mutable.HashMap
  * @author Fluffy8x
  */
 object ResourceManager {
-  val images = new HashMap[String, GLFWimage]
+  val images = new HashMap[String, SCHTexture]
 }
