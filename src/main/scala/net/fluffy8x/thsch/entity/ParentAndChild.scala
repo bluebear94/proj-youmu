@@ -6,7 +6,7 @@ import scala.collection.mutable.Set
 // <http://stackoverflow.com/questions/28332220/scala-type-error-for-cyclically-referenced-traits/28332724>
 
 trait Parent[P <: Parent[P, C], C <: Child[C, P]] { this: P =>
-  protected val children: scala.collection.mutable.Set[C]
+  protected val children: scala.collection.mutable.Set[C] = Set.empty[C]
   /**
    * Adds <code>c</code> to the list of this instance's children
    * and sets the child's parent as this instance.
@@ -25,7 +25,7 @@ trait Parent[P <: Parent[P, C], C <: Child[C, P]] { this: P =>
 }
 
 trait Child[C <: Child[C, P], P <: Parent[P, C]] { this: C =>
-  protected var _parent: P
+  protected var _parent: P = _
   def parent = _parent
   def parent_=(p: P) = _parent = p
 }

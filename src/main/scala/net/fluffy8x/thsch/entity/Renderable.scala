@@ -34,7 +34,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       } else Point2D(0, 0)
     }
   }
-  def tick() {
+  abstract override def tick() {
     super.tick()
     render()
   }
@@ -42,6 +42,11 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
 
 /*
 // Uncomment this when we find a way to represent textures
-trait Primitive extends Renderable {
-  var vertices: Array[(Color, Point2D)]
-}*/
+// Refer to later: glBegin glEnd glVertex* glTexCoord*
+// 
+trait Primitive2D extends Renderable {
+  var vertices: Array[(Color, Point2D, Point2D)]
+}
+trait Primitive3D extends Renderable {
+  var vertices: Array[(Color, Point3D, Point3D)]
+*/
