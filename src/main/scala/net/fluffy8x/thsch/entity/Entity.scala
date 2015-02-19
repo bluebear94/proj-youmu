@@ -12,4 +12,12 @@ trait Entity {
   }
   def tick()
   protected def onDelete()
+  protected var _manager: EntityManager
+  def manager = _manager
+  def manager_=(m: EntityManager) = _manager = m
+  protected def _register(m: EntityManager)
+  def register(m: EntityManager) = {
+    manager = m
+    _register(m)
+  }
 }

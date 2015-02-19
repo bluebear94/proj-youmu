@@ -11,7 +11,13 @@ case class Angle(theta: Double) extends AnyVal {
   def sin: Double = Math.sin(theta)
   def cos: Double = Math.cos(theta)
   def tan: Double = Math.tan(theta)
+  /**
+   * The measure of the angle in radians.
+   */
   def radianValue = theta
+  /**
+   * The measure of the angle in degrees.
+   */
   def degreeValue = Math.toDegrees(theta)
   def +(a: Angle) = Angle(theta + a.theta)
   def -(a: Angle) = Angle(theta - a.theta)

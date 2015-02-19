@@ -6,17 +6,14 @@ import net.fluffy8x.thsch.base.Point3D
 /**
  * Describes an entity that can be rendered.
  */
-trait Renderable extends Entity with Child[Renderable, EntityManager] {
+trait Renderable extends Child[Renderable, EntityManager] {
   var position: Point3D
   var angle: Angle
   def render() {
     if (isVisible) _render()
   }
   protected def _render(): Unit
-  def tick() {
-    super.tick()
-    render()
-  }
+  
   var isVisible = false
   def basis: CoordinateBasis
   def renderPriority: Double
@@ -38,3 +35,16 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
     }
   }
 }
+
+trait RenderableEntity extends Entity with Renderable {
+  def tick() {
+    super.tick()
+    render()
+  }
+}
+
+/*
+// Uncomment this when we find a way to represent textures
+trait Primitive extends Renderable {
+  var vertices: Array[(Color, Point2D)]
+}*/
