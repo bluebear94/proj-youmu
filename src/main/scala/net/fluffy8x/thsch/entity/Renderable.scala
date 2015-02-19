@@ -6,7 +6,7 @@ import net.fluffy8x.thsch.base.Point3D
 /**
  * Describes an entity that can be rendered.
  */
-trait Renderable extends Child[Renderable, EntityManager] {
+trait Renderable extends Entity with Child[Renderable, EntityManager] {
   var position: Point3D
   var angle: Angle
   def render() {
@@ -34,9 +34,6 @@ trait Renderable extends Child[Renderable, EntityManager] {
       } else Point2D(0, 0)
     }
   }
-}
-
-trait RenderableEntity extends Entity with Renderable {
   def tick() {
     super.tick()
     render()
