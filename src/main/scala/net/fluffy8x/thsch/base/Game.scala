@@ -12,7 +12,8 @@ import scala.collection.mutable.Set
 trait Game extends Script[Unit, Unit]
   with Child[Game, GameWindow]
   with Parent[Game, EntityManager] {
-  var keyReader: KeyStream
+  var igKeyReader: InGameKeyStream
+  val ogKeyReader: OutGameKeyStream
   val activeScripts: Set[Script[_, _]]
   val system = genSystem
   def beginScript[Params](s: Script[Params, _], p: Params) = {

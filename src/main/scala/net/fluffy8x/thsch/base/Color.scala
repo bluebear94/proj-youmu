@@ -16,7 +16,7 @@ case class Color(rgba: Int) extends AnyVal {
   def g = (rgba >>> 8).toByte
   def b = rgba.toByte
   def toAWT = new java.awt.Color(rgba)
-  def set = GL11.glColor4ub(r, b, g, a)
+  def set() = GL11.glColor4ub(r, b, g, a)
 }
 
 object Color {
