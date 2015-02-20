@@ -41,7 +41,13 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
   }
 }
 
+/**
+ * A primitive drawing mode.
+ */
 case class PrimType(t: Int) extends AnyVal {
+  /**
+   * Calls <code>GL11.glBegin</code> using the current object's t.
+   */
   def glBegin() = GL11.glBegin(t)
 }
 object PrimType {
@@ -60,13 +66,15 @@ object PrimType {
 
 // Uncomment this when we find a way to represent textures
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
-// 
+/**
+ * A 2D primitive object.
+ */
 class Primitive2D(
   var primtype: PrimType,
   var texture: SCHTexture,
   var vertices: Array[(Color, Point2D, Point2D)]
 ) extends Renderable {
-  def _render() {
+  protected def _render() {
     primtype.glBegin()
     texture.glSet()
     val len = vertices.length
@@ -78,6 +86,7 @@ class Primitive2D(
       GL11.glVertex2d(coords.x, coords.y)
       i += 1
     }
+    GL11.glEnd()
   }
   protected def _register(m: EntityManager) {
     m.miscPrimitives += this
