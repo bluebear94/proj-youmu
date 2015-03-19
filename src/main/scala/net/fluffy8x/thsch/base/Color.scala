@@ -21,7 +21,7 @@ case class Color(rgba: Int) extends AnyVal {
 
 object Color {
   def apply(r: Int, g: Int, b: Int, a: Int): Color =
-    Color((r << 24) | (g << 16) | (b << 8) | a)
+    Color((a << 24) | (r << 16) | (g << 8) | b)
   def apply(r: Int, g: Int, b: Int): Color = apply(r, g, b, 255)
   def get = {
     val buf = FloatBuffer.allocate(4)
