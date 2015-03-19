@@ -56,6 +56,7 @@ case class Point3D(x: Double, y: Double, z: Double) {
   def +(v: Vector3D) = Point3D(x + v.x, y + v.y, z + v.z)
   def -(v: Vector3D) = Point3D(x - v.x, y - v.y, z - v.z)
   def -(v: Point3D) = Vector3D(x - v.x, y - v.y, z - v.z)
+  def to2 = Point2D(x, y)
 }
 
 /**
@@ -84,6 +85,7 @@ case class Vector3D(x: Double, y: Double, z: Double) {
         y * v.z - z * v.y,
         z * v.x - x * v.z,
         x * v.y - y * v.x)
+  def to2 = Vector2D(x, y)
 }
 
 object Vector3D {

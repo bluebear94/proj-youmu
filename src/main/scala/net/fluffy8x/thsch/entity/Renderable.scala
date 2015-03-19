@@ -3,6 +3,7 @@ package net.fluffy8x.thsch.entity
 import net.fluffy8x.thsch.base._
 import org.lwjgl.opengl._
 import net.fluffy8x.thsch.resource._
+import scala.collection.mutable.Set
 
 /**
  * Describes an entity that can be rendered.
@@ -14,10 +15,35 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
     if (isVisible) _render()
   }
   protected def _render(): Unit
-  
+  protected def _register(m: EntityManager) {
+    val r = m.renderables
+    try {
+      val theSet = r(renderPriority)
+      theSet += this
+    } catch {
+      case e: NoSuchElementException => {
+    	m.renderables = r.updated(renderPriority, Set(this))
+      }
+    }
+  }
   var isVisible = false
   def basis: CoordinateBasis
-  def renderPriority: Double
+  private var rp = 0.0
+  def renderPriority: Double = rp
+  def renderPriority_=(_rp: Double) = {
+    val r = manager.renderables
+    val theSet = r(rp)
+    theSet -= this
+    rp = _rp
+    try {
+      val theSet = r(rp)
+      theSet += this
+    } catch {
+      case e: NoSuchElementException => {
+    	manager.renderables = r.updated(rp, Set(this))
+      }
+    }
+  }
   /**
    * Returns the upper left corner based on the current {@link CoordinateBasis}
    * and render priority.
@@ -38,6 +64,12 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
   abstract override def tick() {
     super.tick()
     render()
+  }
+  override def delete() {
+    super.delete()
+    val r = manager.renderables
+    val theSet = r(renderPriority)
+    theSet -= this
   }
 }
 
@@ -64,7 +96,6 @@ object PrimType {
 }
 
 
-// Uncomment this when we find a way to represent textures
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 /**
  * A 2D primitive object.
@@ -72,9 +103,14 @@ object PrimType {
 class Primitive2D(
   var primtype: PrimType,
   var texture: SCHTexture,
-  var vertices: Array[(Color, Point2D, Point2D)]
+  var vertices: Array[(Color, Point2D, Point2D)],
+  var isAbsolute: Boolean = false
 ) extends Renderable {
-  protected def _render() {
+  protected def _render {
+    if (isAbsolute) _renderAbs()
+    else _renderRel()
+  }
+  protected def _renderAbs() {
     primtype.glBegin()
     texture.glSet()
     val len = vertices.length
@@ -88,8 +124,22 @@ class Primitive2D(
     }
     GL11.glEnd()
   }
-  protected def _register(m: EntityManager) {
-    m.miscPrimitives += this
+  protected def _renderRel() {
+    primtype.glBegin()
+    texture.glSet()
+    val len = vertices.length
+    var i = 0
+    while (i < len) {
+      val (col, texCoords, c) = vertices(i)
+      val coords = c + 
+      	(upperLeft - Point2D(0, 0)) +
+      	(position.to2 - Point2D(0, 0))
+      col.set()
+      GL11.glTexCoord2d(texCoords.x, texCoords.y)
+      GL11.glVertex2d(coords.x, coords.y)
+      i += 1
+    }
+    GL11.glEnd()
   }
 }
 /*
