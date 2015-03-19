@@ -11,6 +11,7 @@ import scala.collection.mutable.Set
 trait Renderable extends Entity with Child[Renderable, EntityManager] {
   var position: Point3D
   var angle: Angle
+  var center: Point3D
   def render() {
     if (isVisible) _render()
   }
@@ -104,11 +105,13 @@ class Primitive2D(
   var primtype: PrimType,
   var texture: SCHTexture,
   var vertices: Array[(Color, Point2D, Point2D)],
-  var isAbsolute: Boolean = false
+  var isAbsolute: Boolean = false,
+  var rotatable: Boolean = false
 ) extends Renderable {
   protected def _render {
     if (isAbsolute) _renderAbs()
-    else _renderRel()
+    else if (!rotatable) _renderRel()
+    else _renderRot()
   }
   protected def _renderAbs() {
     primtype.glBegin()
@@ -141,7 +144,50 @@ class Primitive2D(
     }
     GL11.glEnd()
   }
+  protected def _renderRot() {
+    primtype.glBegin()
+    texture.glSet()
+    val len = vertices.length
+    var i = 0
+    while (i < len) {
+      val (col, texCoords, c) = vertices(i)
+      val rawcoords = c + 
+      	(upperLeft - Point2D(0, 0)) +
+      	(position.to2 - Point2D(0, 0))
+      val cr = rawcoords - center.to2
+      val r = cr.r
+      val theta = cr.theta
+      val coords = center.to2 + Vector2D.fromRt(r, theta + angle)
+      col.set()
+      GL11.glTexCoord2d(texCoords.x, texCoords.y)
+      GL11.glVertex2d(coords.x, coords.y)
+      i += 1
+    }
+    GL11.glEnd()
+  }
 }
+
+object Primitive2D {
+  def sprite(texture: SCHTexture, source: BoundsRect, dest: BoundsRect) = {
+    val s1 = source.p1
+    val s2 = source.p2
+    val ss1 =
+      Point2D(s1.x.toDouble / texture.width, s1.y.toDouble / texture.height)
+    val ss2 =
+      Point2D(s2.x.toDouble / texture.width, s2.y.toDouble / texture.height)
+    new Primitive2D(
+      PrimType.Quads,
+      texture,
+      Array(
+        (Color(0xFFFFFFFF), ss1, dest.p1),
+        (Color(0xFFFFFFFF), Point2D(ss2.x, ss1.y), Point2D(dest.p2.x, dest.p1.y)),
+        (Color(0xFFFFFFFF), ss2, dest.p2),
+        (Color(0xFFFFFFFF), Point2D(ss1.x, ss2.y), Point2D(dest.p1.x, dest.p2.y))
+      )
+    )
+  }
+}
+
 /*
 trait Primitive3D extends Renderable {
   var vertices: Array[(Color, Point3D, Point3D)]
