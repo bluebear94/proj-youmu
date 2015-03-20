@@ -1,5 +1,15 @@
 ## Fluffy8x's devlog
 
+### 2015-03-20
+
+Woo, 5 in the morning!
+TPrimitive2D is now a trait, which Primitive2D implements. This allows
+having sprites be a separate class instead of something constructed
+by a utility method.
+
+It's still a long journey. I will have fun debugging things when everything
+is in a playable state.
+
 ### 2015-03-18
 
 Replaced the existing set that keeps primitive objects to encompass

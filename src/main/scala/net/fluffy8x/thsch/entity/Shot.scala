@@ -21,13 +21,13 @@ trait PlayerShot extends Shot {
 case class ShotData(
   texture: SCHTexture,
   spriteBounds: BoundsRect,
-  hitboxBounds: BoundsRect,
+  destBounds: BoundsRect,
+  hitboxIfPresent: Option[Hitbox] = None,
   blendMode: BlendMode = BlendMode.Alpha,
   fog: Color = Color(0xFFFFFFFF),
   fixedAngle: Boolean = false) {
-  def createPrimitive: Primitive2D = {
-    val obj = Primitive2D.sprite(texture, spriteBounds, hitboxBounds)
-    obj.rotatable = !fixedAngle
-    obj
-  }
+  def createSprite: Sprite2D =
+    new Sprite2D(texture, spriteBounds, destBounds, !fixedAngle, blendMode)
+  lazy val hitbox: Hitbox = hitboxIfPresent getOrElse
+    Circle(Point2D(0, 0), 0.8 * (destBounds.p1 - destBounds.p2).r)
 }

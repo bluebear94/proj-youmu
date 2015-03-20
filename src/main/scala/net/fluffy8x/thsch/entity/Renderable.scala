@@ -117,16 +117,14 @@ object BlendMode {
 }
 
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
-/**
- * A 2D primitive object.
- */
-class Primitive2D(
-  var primtype: PrimType,
-  var texture: SCHTexture,
-  var vertices: Array[(Color, Point2D, Point2D)],
-  var isAbsolute: Boolean = false,
-  var rotatable: Boolean = false,
-  var blendMode: BlendMode = BlendMode.Alpha) extends Renderable {
+
+trait TPrimitive2D extends Renderable {
+  def primtype: PrimType
+  def texture: SCHTexture
+  def vertices: Array[(Color, Point2D, Point2D)]
+  def isAbsolute: Boolean = false
+  def rotatable: Boolean = false
+  def blendMode: BlendMode = BlendMode.Alpha
   protected def _render {
     if (isAbsolute) _renderAbs()
     else if (!rotatable) _renderRel()
@@ -187,6 +185,48 @@ class Primitive2D(
     }
     GL11.glEnd()
   }
+}
+
+/**
+ * A 2D primitive object.
+ */
+class Primitive2D(
+  var _primtype: PrimType,
+  var _texture: SCHTexture,
+  var _vertices: Array[(Color, Point2D, Point2D)],
+  var _isAbsolute: Boolean = false,
+  var _rotatable: Boolean = false,
+  var _blendMode: BlendMode = BlendMode.Alpha) extends TPrimitive2D {
+  def primtype = _primtype
+  def texture = _texture
+  def vertices = _vertices
+  override def isAbsolute = _isAbsolute
+  override def rotatable = _rotatable
+  override def blendMode = _blendMode
+}
+
+class Sprite2D(
+  var _texture: SCHTexture,
+  var _source: BoundsRect,
+  var _dest: BoundsRect,
+  var _rotatable: Boolean = true,
+  var _blendMode: BlendMode = BlendMode.Alpha) extends TPrimitive2D {
+  def primtype = PrimType.Quads
+  val s1 = _source.p1
+    val s2 = _source.p2
+    val ss1 =
+      Point2D(s1.x.toDouble / texture.width, s1.y.toDouble / texture.height)
+    val ss2 =
+      Point2D(s2.x.toDouble / texture.width, s2.y.toDouble / texture.height)
+  def texture = _texture
+  def vertices = Array(
+        (Color(0xFFFFFFFF), ss1, _dest.p1),
+        (Color(0xFFFFFFFF), Point2D(ss2.x, ss1.y), Point2D(_dest.p2.x, _dest.p1.y)),
+        (Color(0xFFFFFFFF), ss2, _dest.p2),
+        (Color(0xFFFFFFFF), Point2D(ss1.x, ss2.y), Point2D(_dest.p1.x, _dest.p2.y)))
+  override def isAbsolute = false
+  override def rotatable = _rotatable
+  override def blendMode = _blendMode
 }
 
 object Primitive2D {
