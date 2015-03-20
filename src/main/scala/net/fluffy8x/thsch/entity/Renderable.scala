@@ -23,7 +23,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       theSet += this
     } catch {
       case e: NoSuchElementException => {
-    	m.renderables = r.updated(renderPriority, Set(this))
+        m.renderables = r.updated(renderPriority, Set(this))
       }
     }
   }
@@ -41,7 +41,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       theSet += this
     } catch {
       case e: NoSuchElementException => {
-    	manager.renderables = r.updated(rp, Set(this))
+        manager.renderables = r.updated(rp, Set(this))
       }
     }
   }
@@ -96,6 +96,25 @@ object PrimType {
   val Polygon = PrimType(GL11.GL_POLYGON)
 }
 
+case class BlendMode(
+  rgbEquation: Int, rgbSfactor: Int, rgbDfactor: Int,
+  aEquation: Int, aSfactor: Int, aDfactor: Int) {
+  def use(): Unit = {
+    GL20.glBlendEquationSeparate(rgbEquation, aEquation)
+    GL14.glBlendFuncSeparate(rgbSfactor, rgbDfactor, aSfactor, aDfactor)
+  }
+}
+object BlendMode {
+  // I have no idea
+  val Alpha =
+    BlendMode(
+      GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+      GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+  val Add =
+    BlendMode(
+      GL14.GL_FUNC_ADD, GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ONE,
+      GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+}
 
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 /**
@@ -106,8 +125,8 @@ class Primitive2D(
   var texture: SCHTexture,
   var vertices: Array[(Color, Point2D, Point2D)],
   var isAbsolute: Boolean = false,
-  var rotatable: Boolean = false
-) extends Renderable {
+  var rotatable: Boolean = false,
+  var blendMode: BlendMode = BlendMode.Alpha) extends Renderable {
   protected def _render {
     if (isAbsolute) _renderAbs()
     else if (!rotatable) _renderRel()
@@ -116,6 +135,7 @@ class Primitive2D(
   protected def _renderAbs() {
     primtype.glBegin()
     texture.glSet()
+    blendMode.use()
     val len = vertices.length
     var i = 0
     while (i < len) {
@@ -130,13 +150,14 @@ class Primitive2D(
   protected def _renderRel() {
     primtype.glBegin()
     texture.glSet()
+    blendMode.use()
     val len = vertices.length
     var i = 0
     while (i < len) {
       val (col, texCoords, c) = vertices(i)
-      val coords = c + 
-      	(upperLeft - Point2D(0, 0)) +
-      	(position.to2 - Point2D(0, 0))
+      val coords = c +
+        (upperLeft - Point2D(0, 0)) +
+        (position.to2 - Point2D(0, 0))
       col.set()
       GL11.glTexCoord2d(texCoords.x, texCoords.y)
       GL11.glVertex2d(coords.x, coords.y)
@@ -147,13 +168,14 @@ class Primitive2D(
   protected def _renderRot() {
     primtype.glBegin()
     texture.glSet()
+    blendMode.use()
     val len = vertices.length
     var i = 0
     while (i < len) {
       val (col, texCoords, c) = vertices(i)
-      val rawcoords = c + 
-      	(upperLeft - Point2D(0, 0)) +
-      	(position.to2 - Point2D(0, 0))
+      val rawcoords = c +
+        (upperLeft - Point2D(0, 0)) +
+        (position.to2 - Point2D(0, 0))
       val cr = rawcoords - center.to2
       val r = cr.r
       val theta = cr.theta
@@ -182,9 +204,7 @@ object Primitive2D {
         (Color(0xFFFFFFFF), ss1, dest.p1),
         (Color(0xFFFFFFFF), Point2D(ss2.x, ss1.y), Point2D(dest.p2.x, dest.p1.y)),
         (Color(0xFFFFFFFF), ss2, dest.p2),
-        (Color(0xFFFFFFFF), Point2D(ss1.x, ss2.y), Point2D(dest.p1.x, dest.p2.y))
-      )
-    )
+        (Color(0xFFFFFFFF), Point2D(ss1.x, ss2.y), Point2D(dest.p1.x, dest.p2.y))))
   }
 }
 

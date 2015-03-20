@@ -17,13 +17,17 @@ class EntityManager
   // var enemy: Set[Enemy]
   // var boss: OneOrMore[Boss]
   // var items: Set[Item]
-  // var playerShots: Set[PlayerShot]
-  // var enemyShots: Set[EnemyShot]
+  var playerShots: Set[PlayerShot]
+  var enemyShots: Set[Shot]
   var renderables: TreeMap[Double, Set[Renderable]] = TreeMap.empty
   def tick() = {
     renderables foreach {
       case (renderPriority, objs) => EntityManager.removeAllDeleted(objs)
     }
+    EntityManager.tickOn(enemyShots)
+    EntityManager.removeAllDeleted(enemyShots)
+    EntityManager.tickOn(playerShots)
+    EntityManager.removeAllDeleted(playerShots)
   }
 }
 object EntityManager {

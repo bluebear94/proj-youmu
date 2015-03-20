@@ -11,6 +11,7 @@ class SCHTexture(w: Int, h: Int) {
   val width = MathUtil.mathRoundPoT(w)
   val height = MathUtil.mathRoundPoT(h)
   val pixels = IntBuffer.allocate(width * height)
+  var lastUsed = System.nanoTime
   def glSet() = {
     GL11.glTexImage2D(
       GL11.GL_TEXTURE_2D,
@@ -23,7 +24,9 @@ class SCHTexture(w: Int, h: Int) {
       GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
       pixels
     )
+    lastUsed = System.nanoTime
   }
+  def size = (width * height) << 2
 }
 
 object SCHTexture {
@@ -35,7 +38,7 @@ object SCHTexture {
     var j = 0
     var i = 0
     var k = 0
-    while (j < h) {
+    while (j < h) { // faster than Scala's for loop
       i = 0
       while (i < w) {
         tex.pixels.put(k + i, im.pixel(j, i))

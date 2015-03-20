@@ -58,3 +58,8 @@ case object NullH extends Hitbox {
   def collides(that: Hitbox) = false
   def offset(v: Vector2D) = NullH
 }
+
+case class Union(h1: Hitbox, h2: Hitbox) extends Hitbox {
+  def offset(v: Vector2D) = Union(h1 offset v, h2 offset v)
+  def collides(that: Hitbox) = (h1 collides that) || (h2 collides that)
+}
