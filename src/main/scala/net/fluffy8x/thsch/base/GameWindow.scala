@@ -8,7 +8,7 @@ class GameWindow(
   val stageWidth: Int = 384, val stageHeight: Int = 448
 ) extends Parent[GameWindow, Game] {
   def deletionBounds = BoundsRect(
-    Point2D(-64, -64),
-    Point2D(width + 64, height + 64)
+    Vector2D(-64, -64),
+    Vector2D(width + 64, height + 64)
   )
 }
