@@ -21,7 +21,7 @@ case class Angle(theta: Double) extends AnyVal {
   def degreeValue = Math.toDegrees(theta)
   def +(a: Angle) = Angle(theta + a.theta)
   def -(a: Angle) = Angle(theta - a.theta)
-  def unary_-(a: Angle) = Angle(-theta)
+  def unary_- = Angle(-theta)
   def *(s: Double) = Angle(s * theta)
   def /(s: Double) = Angle(theta / s)
   def /?(a: Angle) = theta / a.theta
