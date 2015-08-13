@@ -8,6 +8,7 @@ import net.fluffy8x.thsch.base._
 trait Collidable extends Entity {
   def hitbox: Hitbox
   def isInvincible: Boolean
+  var collisionClass: CollisionClass
 }
 
 /**
@@ -16,7 +17,7 @@ trait Collidable extends Entity {
  * of {@link Movable} as well.
  */
 trait Movable extends Collidable {
-  var s: Point2D
+  var s: Vector2D
   var v: Vector2D
   var a: Vector2D
   var j: Vector2D
@@ -30,7 +31,7 @@ trait Movable extends Collidable {
     omega += alpha
   }
   def relativeHitbox: Hitbox
-  def hitbox = relativeHitbox.offset(s - Point2D(0, 0))
+  def hitbox = relativeHitbox.offset(s)
 }
 
 trait WithHealth extends Collidable {

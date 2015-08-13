@@ -9,9 +9,11 @@ import net.fluffy8x.thsch.base._
 trait Hitbox {
   def collides(that: Hitbox): Boolean
   def offset(v: Vector2D): Hitbox
+  var owner: Collidable
+  var isActive: Boolean
 }
 
-case class Line(a: Point2D, b: Point2D) extends Hitbox {
+case class Line(a: Vector2D, b: Vector2D) extends Hitbox {
   def collides(that: Hitbox) = that match {
     case Line(c, d) => {
       val r = b - a
@@ -34,7 +36,7 @@ case class Line(a: Point2D, b: Point2D) extends Hitbox {
   def offset(v: Vector2D) = Line(a + v, b + v)
 }
 
-case class Circle(c: Point2D, r: Double) extends Hitbox {
+case class Circle(c: Vector2D, r: Double) extends Hitbox {
   def collides(that: Hitbox) = that match {
     case Circle(c2, r2) => {
       (c2 - c).r2 < ((r + r2) * (r + r2))
@@ -42,24 +44,4 @@ case class Circle(c: Point2D, r: Double) extends Hitbox {
     case x => x collides this
   }
   def offset(v: Vector2D) = Circle(c + v, r);
-}
-
-case class Polygon(vertices: List[Point2D], closed: Boolean = true)
-    extends Hitbox {
-  val trueVertices = if (closed) (vertices.last :: vertices) else vertices
-  val edges = trueVertices.sliding(1).map {
-    case List(a, b) => Line(a, b)
-  }.toList
-  def collides(that: Hitbox) = edges.exists(_ collides that)
-  def offset(v: Vector2D) = Polygon(vertices.map(_ + v), closed)
-}
-
-case object NullH extends Hitbox {
-  def collides(that: Hitbox) = false
-  def offset(v: Vector2D) = NullH
-}
-
-case class Union(h1: Hitbox, h2: Hitbox) extends Hitbox {
-  def offset(v: Vector2D) = Union(h1 offset v, h2 offset v)
-  def collides(that: Hitbox) = (h1 collides that) || (h2 collides that)
 }

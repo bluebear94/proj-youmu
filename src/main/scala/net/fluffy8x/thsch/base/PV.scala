@@ -9,6 +9,7 @@ import net.fluffy8x.thsch.syntax._
  */
 case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
   // Note! p.copy(x = 2)
+  lazy val r2 = r * r
   def withX(newX: Double) = Vector2D(newX, y)
   def withY(newY: Double) = Vector2D(x, newY)
   def withR(newR: Double) = Vector2D(newR, t)
@@ -24,6 +25,7 @@ case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
   def cross2D(v: Vector2D) = x * v.y - y * v.x
   def proj(that: Vector2D) =
 	  that * ((this dot that) / (that dot that))
+  def to3 = Vector3D(x, y, 0, r, r, t, 90.degrees)
 }
 
 object Vector2D {
@@ -78,21 +80,24 @@ object Vector3D {
    */
   def apply(x: Double, y: Double, z: Double): Vector3D = {
     val r = Math.sqrt(x * x + y * y)
-    Vector3D(x, y, z, r, Math.sqrt(r * r + z * z), Angle.atan2(y, x), Angle.atan2(r, z))
+    val rho = Math.sqrt(r * r + z * z)
+    Vector3D(x, y, z, r, rho, Angle.atan2(y, x), Angle.atan2(rho, z))
   }
   /**
    * Returns an instance of the {@link Vector3D} class from the given
    * cylindrical coordinates.
    */
-  def apply(r: Double, theta: Angle, z: Double): Vector3D =
-    Vector3D(r * theta.cos, r * theta.sin, z)
+  def apply(r: Double, theta: Angle, z: Double): Vector3D = {
+    val rho = Math.sqrt(r * r + z * z)
+    Vector3D(r * theta.cos, r * theta.sin, z, r, rho, theta, Angle.atan2(rho, z))
+  }
   /**
    * Returns an instance of the {@link Vector3D} class from the given
    * spherical coordinates.
    */
   def apply(rho: Double, theta: Angle, phi: Angle): Vector3D = {
     val rsp = rho * phi.sin
-    Vector3D(rsp * theta.cos, rsp * theta.sin, rho * phi.cos)
+    Vector3D(rsp * theta.cos, rsp * theta.sin, rho * phi.cos, rsp, rho, theta, phi)
   }
 }
 
