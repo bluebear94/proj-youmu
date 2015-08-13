@@ -23,10 +23,7 @@ class EntityManager
     renderables foreach {
       case (renderPriority, objs) => EntityManager.removeAllDeleted(objs)
     }
-    EntityManager.tickOn(enemyShots)
-    EntityManager.removeAllDeleted(enemyShots)
-    EntityManager.tickOn(playerShots)
-    EntityManager.removeAllDeleted(playerShots)
+    EntityManager.tickOn(collidables)
   }
 }
 object EntityManager {

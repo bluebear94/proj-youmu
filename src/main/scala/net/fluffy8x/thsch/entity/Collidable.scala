@@ -13,6 +13,10 @@ trait Collidable extends Entity {
     super._register(m)
     m.collidables += this
   }
+  def onDelete(m: EntityManager) = {
+    super.onDelete(m)
+    m.collidables -= this
+  }
 }
 
 /**
@@ -21,10 +25,10 @@ trait Collidable extends Entity {
  * of {@link Movable} as well.
  */
 trait Movable extends Collidable {
-  var s: Vector2D
-  var v: Vector2D
-  var a: Vector2D
-  var j: Vector2D
+  var s: Vector3D
+  var v: Vector3D
+  var a: Vector3D
+  var j: Vector3D
   var omega: Angle
   var alpha: Angle
   def update(): Unit = {
@@ -35,7 +39,7 @@ trait Movable extends Collidable {
     omega += alpha
   }
   def relativeHitbox: Hitbox
-  def hitbox = relativeHitbox.offset(s)
+  def hitbox = relativeHitbox.offset(s.to2)
 }
 
 trait WithHealth extends Collidable {

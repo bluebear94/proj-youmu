@@ -8,10 +8,10 @@ trait Entity {
     this match {
       case p: Parent[_, _] => p.deleteChildren()
     }
-    onDelete()
+    onDelete(manager)
   }
   def tick()
-  protected def onDelete()
+  protected def onDelete(m: EntityManager)
   protected var _manager: EntityManager
   def manager = _manager
   def manager_=(m: EntityManager) = _manager = m
