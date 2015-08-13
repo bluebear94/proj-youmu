@@ -9,7 +9,6 @@ import net.fluffy8x.thsch.base._
 trait Hitbox {
   def collides(that: Hitbox): Boolean
   def offset(v: Vector2D): Hitbox
-  var owner: Collidable
   var isActive: Boolean
 }
 
@@ -31,7 +30,6 @@ case class Line(a: Vector2D, b: Vector2D) extends Hitbox {
       val cd = ac - ad
       (cd dot cd) <= (r * r)
     }
-    case p: Polygon => p collides this
   }
   def offset(v: Vector2D) = Line(a + v, b + v)
 }

@@ -6,7 +6,7 @@ import net.fluffy8x.thsch.base._
  * Defines an entity with a hitbox.
  */
 trait Collidable extends Entity {
-  def hitboxes: List[Hitbox]
+  def hitboxes: Hitbox
   def isInvincible: Boolean
   var collisionClass: CollisionClass
 }
@@ -30,8 +30,8 @@ trait Movable extends Collidable {
     v = v.withTheta(v.theta + omega)
     omega += alpha
   }
-  def relativeHitboxes: List[Hitbox]
-  def hitboxes = relativeHitboxes.map(_.offset(s))
+  def relativeHitbox: Hitbox
+  def hitbox = relativeHitbox.offset(s)
 }
 
 trait WithHealth extends Collidable {
