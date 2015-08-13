@@ -6,7 +6,7 @@ import net.fluffy8x.thsch.base._
  * Defines an entity with a hitbox.
  */
 trait Collidable extends Entity {
-  def hitboxes: Hitbox
+  def hitbox: Hitbox
   def isInvincible: Boolean
   var collisionClass: CollisionClass
 }
