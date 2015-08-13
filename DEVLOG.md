@@ -1,5 +1,13 @@
 ## Fluffy8x's devlog
 
+### 2015-08-13
+
+After a long time, I decided to look at this project again. Due to major
+refactors, the project won't build for a while.
+
+I decided to let the user customize which entities collide with which, and
+implemented a quadtree to speed up collision detection even more.
+
 ### 2015-03-20
 
 Woo, 5 in the morning!
