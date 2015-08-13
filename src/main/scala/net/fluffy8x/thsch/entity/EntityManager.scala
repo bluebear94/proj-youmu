@@ -12,13 +12,12 @@ import scala.collection.mutable.Set
  * @author Fluffy8x
  */
 class EntityManager
-  extends Child[EntityManager, Game] with Parent[EntityManager, Renderable] {
+  extends Child[EntityManager, View] with Parent[EntityManager, Renderable] {
   // var player: OneOrMore[Player]
   // var enemy: Set[Enemy]
   // var boss: OneOrMore[Boss]
   // var items: Set[Item]
-  var playerShots: Set[PlayerShot]
-  var enemyShots: Set[Shot]
+  var collidables = new CollisionStructure
   var renderables: TreeMap[Double, Set[Renderable]] = TreeMap.empty
   def tick() = {
     renderables foreach {

@@ -8,7 +8,11 @@ import net.fluffy8x.thsch.base._
 trait Collidable extends Entity {
   def hitbox: Hitbox
   def isInvincible: Boolean
-  var collisionClass: CollisionClass
+  def collisionClass: CollisionClass
+  def _register(m: EntityManager): Unit = {
+    super._register(m)
+    m.collidables += this
+  }
 }
 
 /**

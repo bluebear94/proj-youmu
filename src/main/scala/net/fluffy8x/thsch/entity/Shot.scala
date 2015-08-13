@@ -1,21 +1,14 @@
 package net.fluffy8x.thsch.entity
 
-import net.fluffy8x.thsch.base.{ Point2D, Vector2D, Point3D, BoundsRect, Color }
+import net.fluffy8x.thsch.base.{ Vector2D, BoundsRect, Color }
 import net.fluffy8x.thsch.resource._
 
 trait Shot extends Movable with Renderable {
-  def _register(m: EntityManager): Unit = {
-    super._register(m)
-    m.enemyShots += this
-  }
+  def collisionClass = CollisionClass.EnemyShot
 }
 
 trait PlayerShot extends Shot {
-  def _register(m: EntityManager): Unit = {
-    super._register(m)
-    m.enemyShots -= this
-    m.playerShots += this
-  }
+  def collisionClass = CollisionClass.PlayerShot
 }
 
 case class ShotData(
@@ -29,5 +22,5 @@ case class ShotData(
   def createSprite: Sprite2D =
     new Sprite2D(texture, spriteBounds, destBounds, !fixedAngle, blendMode)
   lazy val hitbox: Hitbox = hitboxIfPresent getOrElse
-    Circle(Point2D(0, 0), 0.8 * (destBounds.p1 - destBounds.p2).r)
+    Circle(Vector2D(0, 0), 0.8 * (destBounds.p1 - destBounds.p2).r)
 }

@@ -1,6 +1,7 @@
 package net.fluffy8x.thsch.base
 
 import net.fluffy8x.thsch.syntax._
+import net.fluffy8x.thsch.entity.{ Hitbox, Line, Circle }
 
 /**
  * A vector in 2D space.
@@ -109,5 +110,26 @@ case class DoubleWithVectorOps(s: Double) extends AnyVal {
 case class BoundsRect(p1: Vector2D, p2: Vector2D) {
   def contains(p: Vector2D) = {
     between(p.x, p1.x, p2.x) && between(p.y, p1.y, p2.y)
+  }
+  def intersects(b: BoundsRect) = {
+    contains(b.p1) || contains(b.p2)
+  }
+  def intersects(l: Line) = {
+    contains(l.a) || contains(l.b) ||
+      l.collides(Line(p1, Vector2D(p1.x, p2.y))) ||
+      l.collides(Line(p2, Vector2D(p1.x, p2.y))) ||
+      l.collides(Line(p1, Vector2D(p1.y, p2.x))) ||
+      l.collides(Line(p2, Vector2D(p1.y, p2.x)))
+  }
+  def intersects(c: Circle) = {
+    contains(c.c) ||
+      c.collides(Line(p1, Vector2D(p1.x, p2.y))) ||
+      c.collides(Line(p2, Vector2D(p1.x, p2.y))) ||
+      c.collides(Line(p1, Vector2D(p1.y, p2.x))) ||
+      c.collides(Line(p2, Vector2D(p1.y, p2.x)))
+  }
+  def intersects(h: Hitbox): Boolean = h match {
+    case l: Line => intersects(l)
+    case c: Circle => intersects(c)
   }
 }
