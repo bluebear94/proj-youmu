@@ -17,6 +17,7 @@ object Diagnostics extends LWJGLApplication {
   }
   def work() = {
     println(s"$npotSupportLevel support for NPOT (non-power-of-two) textures")
+    println(s"OpenGL version ${GL11.glGetString(GL11.GL_VERSION)}")
     false
   }
   protected def width: Int = 640
