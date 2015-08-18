@@ -1,6 +1,8 @@
 package net.fluffy8x.thsch
 
 import continuations._
+import scala.language.experimental.macros
+import scala.reflect.macros.whitebox.Context
 
 package object syntax {
   /**
@@ -54,5 +56,10 @@ package object syntax {
   implicit def oomToList[A](oom: OneOrMore[A]) = oom.underlying
   def between(a: Double, b: Double, c: Double) = {
     a >= (b min c) && a < (b max c)
+  }
+  val useGL2 = true
+  def ifgl2[T](gl2: T)(gl1: T): T = macro ifgl2Impl
+  def ifgl2Impl(c: Context)(gl2: c.Tree)(gl1: c.Tree) = {
+    if (useGL2) gl2 else gl1
   }
 }

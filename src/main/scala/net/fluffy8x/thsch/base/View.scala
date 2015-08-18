@@ -10,4 +10,5 @@ class View extends Parent[View, EntityManager] {
   var parent: Option[Game] = None
   var transformer2: Transformer2D
   var transformer3: Transformer3D
+  var shader: Shader
 }

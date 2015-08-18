@@ -10,3 +10,7 @@ trait Transformer2D {
 trait Transformer3D {
   def transform(p: Vector3D): Vector2D
 }
+
+trait Shader {
+  def src: String
+}
