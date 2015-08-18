@@ -1,17 +1,19 @@
 package net.fluffy8x.thsch.entity
 
 import net.fluffy8x.thsch.base._
+import net.fluffy8x.thsch.syntax._
 import org.lwjgl.opengl._
 import net.fluffy8x.thsch.resource._
 import scala.collection.mutable.Set
+import java.nio._
 
 /**
  * Describes an entity that can be rendered.
  */
 trait Renderable extends Entity with Child[Renderable, EntityManager] {
-  var position: Point3D
+  var position: Vector3D
   var angle: Angle
-  var center: Point3D
+  var center: Vector3D
   def render() {
     if (isVisible) _render()
   }
@@ -27,8 +29,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       }
     }
   }
-  var isVisible = false
-  def basis: CoordinateBasis
+  var isVisible = true
   private var rp = 0.0
   def renderPriority: Double = rp
   def renderPriority_=(_rp: Double) = {
@@ -45,23 +46,11 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       }
     }
   }
+  def view = parent.parent
   /**
    * Returns the upper left corner based on the current {@link CoordinateBasis}
    * and render priority.
    */
-  def upperLeft = basis match {
-    case CoordinateBasis.Window => Point2D(0, 0)
-    case CoordinateBasis.Frame => {
-      val window = parent.parent.parent
-      Point2D(window.stageX, window.stageY)
-    }
-    case CoordinateBasis.Auto => {
-      if (renderPriority >= 0.2 && renderPriority <= 0.8) {
-        val window = parent.parent.parent
-        Point2D(window.stageX, window.stageY)
-      } else Point2D(0, 0)
-    }
-  }
   abstract override def tick() {
     super.tick()
     render()
@@ -100,7 +89,8 @@ case class BlendMode(
   rgbEquation: Int, rgbSfactor: Int, rgbDfactor: Int,
   aEquation: Int, aSfactor: Int, aDfactor: Int) {
   def use(): Unit = {
-    GL20.glBlendEquationSeparate(rgbEquation, aEquation)
+    GL14.glBlendEquation(rgbEquation)
+    //GL20.glBlendEquationSeparate(rgbEquation, aEquation)
     GL14.glBlendFuncSeparate(rgbSfactor, rgbDfactor, aSfactor, aDfactor)
   }
 }
@@ -116,75 +106,50 @@ object BlendMode {
       GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 }
 
+case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
+
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 
-trait TPrimitive2D extends Renderable {
-  def primtype: PrimType
-  def texture: SCHTexture
-  def vertices: Array[(Color, Point2D, Point2D)]
-  def isAbsolute: Boolean = false
-  def rotatable: Boolean = false
-  def blendMode: BlendMode = BlendMode.Alpha
-  protected def _render {
-    if (isAbsolute) _renderAbs()
-    else if (!rotatable) _renderRel()
-    else _renderRot()
-  }
-  protected def _renderAbs() {
-    primtype.glBegin()
-    texture.glSet()
-    blendMode.use()
-    val len = vertices.length
-    var i = 0
-    while (i < len) {
-      val (col, texCoords, coords) = vertices(i)
-      col.set()
-      GL11.glTexCoord2d(texCoords.x, texCoords.y)
-      GL11.glVertex2d(coords.x, coords.y)
-      i += 1
+trait TPrimitive extends Renderable {
+  var vertices: DoubleBuffer
+  def vertexCount: Int
+  def vertexCount_=(vc: Int): Unit
+  def apply(i: Int): PrimVertex
+  def update(i: Int, v: PrimVertex): Unit
+  var primtype: PrimType
+  var texture: SCHTexture
+  var blendMode: BlendMode
+  def _render() =
+    if (useGL2) {
+      val vbo: Int = GL15.glGenBuffers
+      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
+      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices,
+          GL15.GL_STATIC_DRAW)
+      GL20.glEnableVertexAttribArray(0)
+      GL20.glVertexAttribPointer(0, 3, GL11.GL_DOUBLE, false, 0, 0)
+      GL11.glDrawArrays(primtype.t, 0, vertexCount)
+    } else {
+      primtype.glBegin()
+      texture.glSet1()
+      blendMode.use()
+      val len = vertexCount
+      var i = 0
+      while (i < len) {
+        val PrimVertex(point, uv, color) = apply(i)
+        val rawcoords = point +
+          view.bounds.p1 +
+          position
+        val cr = rawcoords - center
+        val r = cr.r
+        val theta = cr.theta
+        val coords = center.to2 + Vector2D(r, theta + angle)
+        color.set()
+        GL11.glTexCoord2d(uv.x, uv.y)
+        GL11.glVertex2d(coords.x, coords.y)
+        i += 1
+      }
+      GL11.glEnd()
     }
-    GL11.glEnd()
-  }
-  protected def _renderRel() {
-    primtype.glBegin()
-    texture.glSet()
-    blendMode.use()
-    val len = vertices.length
-    var i = 0
-    while (i < len) {
-      val (col, texCoords, c) = vertices(i)
-      val coords = c +
-        (upperLeft - Point2D(0, 0)) +
-        (position.to2 - Point2D(0, 0))
-      col.set()
-      GL11.glTexCoord2d(texCoords.x, texCoords.y)
-      GL11.glVertex2d(coords.x, coords.y)
-      i += 1
-    }
-    GL11.glEnd()
-  }
-  protected def _renderRot() {
-    primtype.glBegin()
-    texture.glSet()
-    blendMode.use()
-    val len = vertices.length
-    var i = 0
-    while (i < len) {
-      val (col, texCoords, c) = vertices(i)
-      val rawcoords = c +
-        (upperLeft - Point2D(0, 0)) +
-        (position.to2 - Point2D(0, 0))
-      val cr = rawcoords - center.to2
-      val r = cr.r
-      val theta = cr.theta
-      val coords = center.to2 + Vector2D.fromRt(r, theta + angle)
-      col.set()
-      GL11.glTexCoord2d(texCoords.x, texCoords.y)
-      GL11.glVertex2d(coords.x, coords.y)
-      i += 1
-    }
-    GL11.glEnd()
-  }
 }
 
 /**
