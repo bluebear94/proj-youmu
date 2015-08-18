@@ -9,8 +9,7 @@ import net.fluffy8x.thsch.syntax._
 class View extends Parent[View, EntityManager] {
   var bounds: BoundsRect
   var parent: Option[Game] = None
-  var transformer2: Transformer2D
-  var transformer3: Transformer3D
+  var transformer: Transformer
   var shader: Shader
   // TODO this should be called whenever views are switched
   def set() =

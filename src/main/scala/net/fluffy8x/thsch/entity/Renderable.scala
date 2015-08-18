@@ -112,10 +112,33 @@ case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
 
 trait TPrimitive extends Renderable {
   var vertices: DoubleBuffer
+  var uvs: DoubleBuffer
+  var color: IntBuffer
   def vertexCount: Int
   def vertexCount_=(vc: Int): Unit
-  def apply(i: Int): PrimVertex
-  def update(i: Int, v: PrimVertex): Unit
+  def apply(i: Int): PrimVertex = {
+    val xyz = Vector3D(
+      vertices.get(3 * i),
+      vertices.get(3 * i + 1),
+      vertices.get(3 * i + 2)
+    )
+    val uv = Vector2D(
+      uvs.get(i << 1),
+      uvs.get((i << 1) + 1)
+    )
+    PrimVertex(xyz, uv, Color(color.get(i)))
+  }
+  def update(i: Int, v: PrimVertex): Unit = v match {
+    case PrimVertex(Vector3D(x, y, z, _, _, _, _),
+        Vector2D(u, v, _, _), Color(c)) => {
+      vertices.put(3 * i, x)
+      vertices.put(3 * i + 1, y)
+      vertices.put(3 * i + 2, z)
+      uvs.put(i << 1, u)
+      uvs.put((i << 1) + 1, v)
+      color.put(i, c)
+    }
+  }
   var primtype: PrimType
   var texture: SCHTexture
   var blendMode: BlendMode
@@ -153,15 +176,15 @@ trait TPrimitive extends Renderable {
 }
 
 /**
- * A 2D primitive object.
+ * A primitive object.
  */
-class Primitive2D(
+class Primitive(
   var _primtype: PrimType,
   var _texture: SCHTexture,
   var _vertices: Array[(Color, Point2D, Point2D)],
   var _isAbsolute: Boolean = false,
   var _rotatable: Boolean = false,
-  var _blendMode: BlendMode = BlendMode.Alpha) extends TPrimitive2D {
+  var _blendMode: BlendMode = BlendMode.Alpha) extends TPrimitive {
   def primtype = _primtype
   def texture = _texture
   def vertices = _vertices
