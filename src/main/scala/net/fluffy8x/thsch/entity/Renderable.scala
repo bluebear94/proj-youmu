@@ -106,6 +106,14 @@ object BlendMode {
       GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 }
 
+case class Usage(u: Int) extends AnyVal
+
+object Usage {
+  val StaticDraw = Usage(GL15.GL_STATIC_DRAW)
+  val DynamicDraw = Usage(GL15.GL_DYNAMIC_DRAW)
+  val StreamDraw = Usage(GL15.GL_STREAM_DRAW)
+}
+
 case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
 
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
@@ -139,17 +147,24 @@ trait TPrimitive extends Renderable {
       color.put(i, c)
     }
   }
+  def usage = Usage.StreamDraw
   var primtype: PrimType
   var texture: SCHTexture
   var blendMode: BlendMode
-  def _render() =
+  var vbo: Int
+  def _register(m: EntityManager) = {
+    super._register(m)
     if (useGL2) {
-      val vbo: Int = GL15.glGenBuffers
+      vbo = GL15.glGenBuffers
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices,
-          GL15.GL_STATIC_DRAW)
+      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, usage.u)
       GL20.glEnableVertexAttribArray(0)
       GL20.glVertexAttribPointer(0, 3, GL11.GL_DOUBLE, false, 0, 0)
+    }
+  }
+  def _render() =
+    if (useGL2) {
+      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
       GL11.glDrawArrays(primtype.t, 0, vertexCount)
     } else {
       primtype.glBegin()
