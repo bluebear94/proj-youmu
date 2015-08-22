@@ -26,9 +26,9 @@ object Diagnostics extends LWJGLApplication {
     triangle = new Primitive
     triangle.vertexCount = 3
     triangle.elemCount = 3
-    triangle(0) = PrimVertex(Vector3D(0.5, 0, 0), Vector2D(0, 0), Color(-1))
-    triangle(1) = PrimVertex(Vector3D(1, 1, 0), Vector2D(0, 0), Color(-1))
-    triangle(2) = PrimVertex(Vector3D(0, 1, 0), Vector2D(0, 0), Color(-1))
+    triangle(0) = PrimVertex(Vector3D(0.5, -1, 0), Vector2D(0, 0), Color(-1))
+    triangle(1) = PrimVertex(Vector3D(-1, 1, 0), Vector2D(0, 1), Color(-1))
+    triangle(2) = PrimVertex(Vector3D(1, 1, 0), Vector2D(1, 1), Color(-1))
     println(triangle(1))
     view = new View(
         BoundsRect(Vector2D(0, 0), Vector2D(640, 480)),
