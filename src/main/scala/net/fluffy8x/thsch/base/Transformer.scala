@@ -17,6 +17,18 @@ class ShaderCompileFailedError(
       s"source:\n$source\nlog:\n$log"
 }
 
+case class ShaderProgram(shaders: Shader*) {
+  lazy val id = {
+    val handle = GL20.glCreateProgram
+    for (shader <- shaders) GL20.glAttachShader(handle, shader.id)
+    GL20.glLinkProgram(handle)
+    handle
+  }
+  def use() = GL20.glUseProgram(id)
+  def attribute(name: String) = GL20.glGetAttribLocation(id, name)
+  def delete() = GL20.glDeleteProgram(id)
+}
+
 /**
  * A shader object.
  * @author bluebear94
@@ -39,7 +51,7 @@ trait Shader {
    * <code>version</code>, or <code>None</code> if we should
    * give up and not apply the shader
    */
-  def fallback: Option[Shader]
+  def fallback: Option[Shader] = None
   lazy val id = {
     val handle = GL20.glCreateShader(GL20.GL_VERTEX_SHADER)
     val fullSource = s"#version $version\n$src"
@@ -50,4 +62,32 @@ trait Shader {
         GL20.glGetShaderInfoLog(handle))
     handle
   }
+  def delete() = GL20.glDeleteShader(id)
+}
+
+case object VertexShader extends Shader {
+  def version = 110
+  def src = s"""
+    in vec3 position;
+    in vec2 uv;
+    in vec4 color;
+    out vec2 UV;
+    out vec4 Color;
+    void main() {
+      Color = color;
+      gl_Position = vec4(position, 1.0);
+    }
+    """
+}
+case object FragmentShader extends Shader {
+  def version = 110
+  def src = s"""
+    in vec3 Color;
+    in vec2 UV;
+    out vec4 outColor;
+    uniform sampler2D tex;
+    void main() {
+      outColor = texture(tex, UV) * vec4(Color, 1.0);
+    } 
+    """
 }

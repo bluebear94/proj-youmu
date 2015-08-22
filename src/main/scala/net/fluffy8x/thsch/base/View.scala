@@ -13,7 +13,7 @@ class View extends Parent[View, EntityManager] {
   var shader: Shader
   // TODO this should be called whenever views are switched
   def set() =
-    if (useGL2) {
+    if (useGL3) {
       
     } else {
       

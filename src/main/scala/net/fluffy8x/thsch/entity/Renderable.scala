@@ -119,51 +119,82 @@ case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 
 trait TPrimitive extends Renderable {
-  var vertices: DoubleBuffer
-  var uvs: DoubleBuffer
-  var color: IntBuffer
+  var vdata: DoubleBuffer
+  val ENTRIES_PER_VERTEX = 9
   def vertexCount: Int
   def vertexCount_=(vc: Int): Unit
   def apply(i: Int): PrimVertex = {
+    val offset = ENTRIES_PER_VERTEX * i
     val xyz = Vector3D(
-      vertices.get(3 * i),
-      vertices.get(3 * i + 1),
-      vertices.get(3 * i + 2)
+      vdata.get(offset),
+      vdata.get(offset + 1),
+      vdata.get(offset + 2)
     )
     val uv = Vector2D(
-      uvs.get(i << 1),
-      uvs.get((i << 1) + 1)
+      vdata.get(offset + 3),
+      vdata.get(offset + 4)
     )
-    PrimVertex(xyz, uv, Color(color.get(i)))
+    val color = Color(
+      (255 * vdata.get(offset + 7)).toInt,
+      (255 * vdata.get(offset + 6)).toInt,
+      (255 * vdata.get(offset + 5)).toInt,
+      (255 * vdata.get(offset + 8)).toInt
+    )
+    PrimVertex(xyz, uv, color)
   }
   def update(i: Int, v: PrimVertex): Unit = v match {
     case PrimVertex(Vector3D(x, y, z, _, _, _, _),
-        Vector2D(u, v, _, _), Color(c)) => {
-      vertices.put(3 * i, x)
-      vertices.put(3 * i + 1, y)
-      vertices.put(3 * i + 2, z)
-      uvs.put(i << 1, u)
-      uvs.put((i << 1) + 1, v)
-      color.put(i, c)
+        Vector2D(u, v, _, _), c) => {
+      val offset = ENTRIES_PER_VERTEX * i
+      vdata.put(offset, x)
+      vdata.put(offset + 1, y)
+      vdata.put(offset + 2, z)
+      vdata.put(offset + 3, u)
+      vdata.put(offset + 4, v)
+      vdata.put(offset + 5, c.b / 255.0)
+      vdata.put(offset + 6, c.g / 255.0)
+      vdata.put(offset + 7, c.r / 255.0)
+      vdata.put(offset + 8, c.a / 255.0)
     }
   }
   def usage = Usage.StreamDraw
   var primtype: PrimType
   var texture: SCHTexture
   var blendMode: BlendMode
+  // Begin GL3.x specific fields
   var vbo: Int
+  var ebo: Int
+  var vao: Int
+  var shaderProgram: ShaderProgram
+  // End GL3.x specific fields
+  // This is MADNESS.
   def _register(m: EntityManager) = {
     super._register(m)
-    if (useGL2) {
+    if (useGL3) {
       vbo = GL15.glGenBuffers
+      ebo = GL15.glGenBuffers
+      vao = GL30.glGenVertexArrays
+      GL30.glBindVertexArray(vao)
+      shaderProgram = ShaderProgram(VertexShader, FragmentShader)
+      GL30.glBindFragDataLocation(shaderProgram.id, 0, "outColor")
+      val positionAttribute = shaderProgram.attribute("position")
+      GL20.glEnableVertexAttribArray(positionAttribute)
+      GL20.glVertexAttribPointer(positionAttribute,
+          3, GL11.GL_DOUBLE, false, 6 * 8, 0)
+      val colorAttribute = shaderProgram.attribute("color")
+      GL20.glEnableVertexAttribArray(colorAttribute)
+      GL20.glVertexAttribPointer(colorAttribute,
+          GL12.GL_BGRA, GL11.GL_DOUBLE, false, 5 * 8, 0)
+      val textureAttribute = shaderProgram.attribute("uv")
+      GL20.glEnableVertexAttribArray(textureAttribute)
+      GL20.glVertexAttribPointer(textureAttribute,
+          2, GL11.GL_DOUBLE, false, 7 * 8, 0)
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, usage.u)
-      GL20.glEnableVertexAttribArray(0)
-      GL20.glVertexAttribPointer(0, 3, GL11.GL_DOUBLE, false, 0, 0)
+      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
     }
   }
   def _render() =
-    if (useGL2) {
+    if (useGL3) {
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
       GL11.glDrawArrays(primtype.t, 0, vertexCount)
     } else {
@@ -188,6 +219,13 @@ trait TPrimitive extends Renderable {
       }
       GL11.glEnd()
     }
+  def onDelete(m: EntityManager) = {
+    super.onDelete(m)
+    shaderProgram.delete()
+    GL15.glDeleteBuffers(vbo)
+    GL15.glDeleteBuffers(ebo)
+    GL30.glDeleteVertexArrays(vao)
+  }
 }
 
 /**

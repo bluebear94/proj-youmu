@@ -27,6 +27,7 @@ case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
   def proj(that: Vector2D) =
 	  that * ((this dot that) / (that dot that))
   def to3 = Vector3D(x, y, 0, r, r, t, 90.degrees)
+  def glsl = s"vec2($x, $y)"
 }
 
 object Vector2D {
@@ -72,6 +73,7 @@ case class Vector3D(x: Double, y: Double, z: Double, r: Double, rho: Double, the
         z * v.x - x * v.z,
         x * v.y - y * v.x)
   def to2 = Vector2D(x, y, r, theta)
+  def glsl = s"vec3($x, $y, $z)"
 }
 
 object Vector3D {
