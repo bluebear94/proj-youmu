@@ -23,8 +23,7 @@ LWJGL3
 
 * Get git and SBT
 * Clone this repository
-* CD into this directory and run SBT (i. e. type `sbt`; what else do you 
-think?)
+* CD into this directory and run `start.sh`
 * Type `compile` to compile the project
 * Type `test` to run tests
 * Type `console` for the Scala REPL
