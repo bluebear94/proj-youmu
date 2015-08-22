@@ -19,11 +19,18 @@ class EntityManager
   // var items: Set[Item]
   var collidables = new CollisionStructure
   var renderables: TreeMap[Double, Set[Renderable]] = TreeMap.empty
+  var entities: Set[Entity] = Set.empty
   def tick() = {
     renderables foreach {
       case (renderPriority, objs) => EntityManager.removeAllDeleted(objs)
     }
-    EntityManager.tickOn(collidables)
+    EntityManager.tickOn(entities)
+    EntityManager.removeAllDeleted(entities)
+  }
+  def renderAll() = {
+    for ((priority, objects) <- renderables)
+      for (e <- objects)
+        e.render()
   }
 }
 object EntityManager {

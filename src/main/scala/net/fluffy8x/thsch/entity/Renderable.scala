@@ -11,9 +11,9 @@ import java.nio._
  * Describes an entity that can be rendered.
  */
 trait Renderable extends Entity with Child[Renderable, EntityManager] {
-  var position: Vector3D
-  var angle: Angle
-  var center: Vector3D
+  var position: Vector3D = Vector3D(0, 0, 0)
+  var angle: Angle = 0.radians
+  var center: Vector3D = Vector3D(0, 0, 0)
   def render() {
     if (isVisible) _render()
   }
@@ -51,7 +51,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
    * Returns the upper left corner based on the current {@link CoordinateBasis}
    * and render priority.
    */
-  abstract override def tick() {
+  override def tick() {
     super.tick()
     render()
   }
@@ -118,11 +118,38 @@ case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
 
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 
-trait TPrimitive extends Renderable {
-  var vdata: DoubleBuffer
+class Primitive extends Renderable {
+  var vdata: DoubleBuffer = DoubleBuffer.allocate(64)
+  var elemBuffer: IntBuffer = IntBuffer.allocate(64)
+  private var vc = 0
+  private var ec = 0
   val ENTRIES_PER_VERTEX = 9
-  def vertexCount: Int
-  def vertexCount_=(vc: Int): Unit
+  def vertexCount: Int = vc
+  def vertexCount_=(vc: Int): Unit = {
+    this.vc = vc
+    val ec = vc * ENTRIES_PER_VERTEX
+    if (ec <= vdata.capacity) vdata.limit(ec)
+    else {
+      val newVData = DoubleBuffer.allocate(vdata.capacity << 1)
+      newVData.limit(ec)
+      vdata = newVData
+    }
+  }
+  def elemCount: Int = ec
+  def elemCount_=(ec: Int): Unit = {
+    var i = this.ec
+    this.ec = ec
+    if (ec <= elemBuffer.capacity) elemBuffer.limit(ec)
+    else {
+      val newEBuffer = IntBuffer.allocate(elemBuffer.capacity << 1)
+      newEBuffer.limit(ec)
+      elemBuffer = newEBuffer
+    }
+    while (i < ec) {
+      elemBuffer.put(i, i)
+      i += 1
+    }
+  }
   def apply(i: Int): PrimVertex = {
     val offset = ENTRIES_PER_VERTEX * i
     val xyz = Vector3D(
@@ -158,22 +185,29 @@ trait TPrimitive extends Renderable {
     }
   }
   def usage = Usage.StreamDraw
-  var primtype: PrimType
-  var texture: SCHTexture
-  var blendMode: BlendMode
+  var primtype: PrimType = PrimType.Triangles
+  var texture: SCHTexture = SCHTexture.white
+  var blendMode: BlendMode = BlendMode.Alpha
   // Begin GL3.x specific fields
-  var vbo: Int
-  var ebo: Int
-  var vao: Int
-  var shaderProgram: ShaderProgram
+  private var vbo: Int = -1
+  private var vao: Int = -1
+  private var ebo: Int = -1
+  private var shaderProgram: ShaderProgram = null
+  private var texHandle: Int = -1
   // End GL3.x specific fields
   // This is MADNESS.
-  def _register(m: EntityManager) = {
+  override def _register(m: EntityManager) = {
     super._register(m)
+    println("initialize")
     if (useGL3) {
       vbo = GL15.glGenBuffers
       ebo = GL15.glGenBuffers
       vao = GL30.glGenVertexArrays
+      texHandle = GL11.glGenTextures
+      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
+      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
+      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
+      GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
       GL30.glBindVertexArray(vao)
       shaderProgram = ShaderProgram(VertexShader, FragmentShader)
       GL30.glBindFragDataLocation(shaderProgram.id, 0, "outColor")
@@ -189,17 +223,19 @@ trait TPrimitive extends Renderable {
       GL20.glEnableVertexAttribArray(textureAttribute)
       GL20.glVertexAttribPointer(textureAttribute,
           2, GL11.GL_DOUBLE, false, 7 * 8, 0)
-      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
     }
   }
   def _render() =
+    println("tick")
     if (useGL3) {
+      texture.glSet()
+      if (shaderProgram != null) shaderProgram.use()
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL11.glDrawArrays(primtype.t, 0, vertexCount)
+      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
+      GL11.glDrawElements(primtype.t, vertexCount, GL11.GL_UNSIGNED_INT, 0)
     } else {
       primtype.glBegin()
-      texture.glSet1()
+      texture.glSet()
       blendMode.use()
       val len = vertexCount
       var i = 0
@@ -211,7 +247,7 @@ trait TPrimitive extends Renderable {
         val cr = rawcoords - center
         val r = cr.r
         val theta = cr.theta
-        val coords = center.to2 + Vector2D(r, theta + angle)
+        val coords = center.to2 + Vector2D.polar(r, theta + angle)
         color.set()
         GL11.glTexCoord2d(uv.x, uv.y)
         GL11.glVertex2d(coords.x, coords.y)
@@ -219,7 +255,7 @@ trait TPrimitive extends Renderable {
       }
       GL11.glEnd()
     }
-  def onDelete(m: EntityManager) = {
+  override def onDelete(m: EntityManager) = {
     super.onDelete(m)
     shaderProgram.delete()
     GL15.glDeleteBuffers(vbo)
@@ -227,7 +263,7 @@ trait TPrimitive extends Renderable {
     GL30.glDeleteVertexArrays(vao)
   }
 }
-
+/*
 /**
  * A primitive object.
  */
@@ -287,7 +323,7 @@ object Primitive2D {
         (Color(0xFFFFFFFF), ss2, dest.p2),
         (Color(0xFFFFFFFF), Point2D(ss1.x, ss2.y), Point2D(dest.p1.x, dest.p2.y))))
   }
-}
+}*/
 
 /*
 trait Primitive3D extends Renderable {

@@ -9,11 +9,11 @@ trait Collidable extends Entity {
   def hitbox: Hitbox
   def isInvincible: Boolean
   def collisionClass: CollisionClass
-  def _register(m: EntityManager): Unit = {
+  abstract override def _register(m: EntityManager): Unit = {
     super._register(m)
     m.collidables += this
   }
-  def onDelete(m: EntityManager) = {
+  abstract override def onDelete(m: EntityManager) = {
     super.onDelete(m)
     m.collidables -= this
   }

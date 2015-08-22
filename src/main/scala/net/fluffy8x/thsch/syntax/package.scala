@@ -55,5 +55,5 @@ package object syntax {
   def between(a: Double, b: Double, c: Double) = {
     a >= (b min c) && a < (b max c)
   }
-  val useGL3 = false
+  val useGL3 = true
 }

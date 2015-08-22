@@ -6,7 +6,16 @@ import org.lwjgl.opengl._
  * @author bluebear94
  */
 trait Transformer {
-  def transform(p: Vector3D): Vector2D
+  def matrix: Array[Array[Double]]
+}
+
+case object IdentityTransformer extends Transformer {
+  def matrix = Array(
+    Array(1, 0, 0, 0),
+    Array(0, 1, 0, 0),
+    Array(0, 0, 1, 0),
+    Array(0, 0, 0, 1)
+  )
 }
 
 class ShaderCompileFailedError(
@@ -66,7 +75,7 @@ trait Shader {
 }
 
 case object VertexShader extends Shader {
-  def version = 110
+  def version = 130
   def src = s"""
     in vec3 position;
     in vec2 uv;
@@ -75,12 +84,13 @@ case object VertexShader extends Shader {
     out vec4 Color;
     void main() {
       Color = color;
+      UV = uv;
       gl_Position = vec4(position, 1.0);
     }
     """
 }
 case object FragmentShader extends Shader {
-  def version = 110
+  def version = 130
   def src = s"""
     in vec3 Color;
     in vec2 UV;

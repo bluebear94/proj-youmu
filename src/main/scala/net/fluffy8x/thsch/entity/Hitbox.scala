@@ -9,7 +9,7 @@ import net.fluffy8x.thsch.base._
 trait Hitbox {
   def collides(that: Hitbox): Boolean
   def offset(v: Vector2D): Hitbox
-  var isActive: Boolean
+  var isActive: Boolean = true
 }
 
 case class Line(a: Vector2D, b: Vector2D) extends Hitbox {

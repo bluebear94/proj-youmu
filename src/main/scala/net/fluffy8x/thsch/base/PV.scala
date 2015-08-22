@@ -13,8 +13,8 @@ case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
   lazy val r2 = r * r
   def withX(newX: Double) = Vector2D(newX, y)
   def withY(newY: Double) = Vector2D(x, newY)
-  def withR(newR: Double) = Vector2D(newR, t)
-  def withTheta(newTheta: Angle) = Vector2D(r, newTheta)
+  def withR(newR: Double) = Vector2D.polar(newR, t)
+  def withTheta(newTheta: Angle) = Vector2D.polar(r, newTheta)
   def +(v: Vector2D) = Vector2D(x + v.x, y + v.y)
   def -(v: Vector2D) = Vector2D(x - v.x, y - v.y)
   def unary_- = Vector2D(-x, -y, r, 180.degrees + t)
@@ -28,6 +28,7 @@ case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
 	  that * ((this dot that) / (that dot that))
   def to3 = Vector3D(x, y, 0, r, r, t, 90.degrees)
   def glsl = s"vec2($x, $y)"
+  override def toString = s"[[\n  X = $x\n  Y = $y\n  R = $r\n  T = $t\n]]"
 }
 
 object Vector2D {
@@ -41,7 +42,7 @@ object Vector2D {
    * Returns an instance of the {@link Vector2D} class from the given
    * magnitude and angle.
    */
-  def apply(r: Double, theta: Angle): Vector2D =
+  def polar(r: Double, theta: Angle): Vector2D =
     Vector2D(r * theta.cos, r * theta.sin, r, theta)
 }
 
@@ -55,10 +56,10 @@ case class Vector3D(x: Double, y: Double, z: Double, r: Double, rho: Double, the
   def withX(newX: Double) = Vector3D(newX, y, z)
   def withY(newY: Double) = Vector3D(x, newY, z)
   def withZ(newZ: Double) = Vector3D(x, y, newZ)
-  def withR(newR: Double) = Vector3D(newR, theta, z)
-  def withTheta(newTheta: Angle) = Vector3D(r, newTheta, z)
-  def withRho(newRho: Double) = Vector3D(newRho, theta, phi)
-  def withPhi(newPhi: Angle) = Vector3D(rho, theta, newPhi)
+  def withR(newR: Double) = Vector3D.cylindrical(newR, theta, z)
+  def withTheta(newTheta: Angle) = Vector3D.cylindrical(r, newTheta, z)
+  def withRho(newRho: Double) = Vector3D.spherical(newRho, theta, phi)
+  def withPhi(newPhi: Angle) = Vector3D.spherical(rho, theta, newPhi)
   def +(v: Vector3D) = Vector3D(x + v.x, y + v.y, z + v.z)
   def -(v: Vector3D) = Vector3D(x - v.x, y - v.y, z - v.z)
   def unary_- = Vector3D(-x, -y, -z, r, rho, 180.degrees + theta, 180.degrees + phi)
@@ -74,6 +75,8 @@ case class Vector3D(x: Double, y: Double, z: Double, r: Double, rho: Double, the
         x * v.y - y * v.x)
   def to2 = Vector2D(x, y, r, theta)
   def glsl = s"vec3($x, $y, $z)"
+  override def toString =
+    s"[[\n  X = $x\n  Y = $y\n  Z = $z\n  R = $r\n  RHO = $rho\n  THETA = $theta\n  PHI = $phi\n]]"
 }
 
 object Vector3D {
@@ -90,7 +93,7 @@ object Vector3D {
    * Returns an instance of the {@link Vector3D} class from the given
    * cylindrical coordinates.
    */
-  def apply(r: Double, theta: Angle, z: Double): Vector3D = {
+  def cylindrical(r: Double, theta: Angle, z: Double): Vector3D = {
     val rho = Math.sqrt(r * r + z * z)
     Vector3D(r * theta.cos, r * theta.sin, z, r, rho, theta, Angle.atan2(rho, z))
   }
@@ -98,7 +101,7 @@ object Vector3D {
    * Returns an instance of the {@link Vector3D} class from the given
    * spherical coordinates.
    */
-  def apply(rho: Double, theta: Angle, phi: Angle): Vector3D = {
+  def spherical(rho: Double, theta: Angle, phi: Angle): Vector3D = {
     val rsp = rho * phi.sin
     Vector3D(rsp * theta.cos, rsp * theta.sin, rho * phi.cos, rsp, rho, theta, phi)
   }

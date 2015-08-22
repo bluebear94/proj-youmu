@@ -8,7 +8,7 @@ package net.fluffy8x.thsch.entity
  * @author Fluffy8x
  */
 trait Untickable extends Entity {
-  final def tick() {
+  final override def tick() {
     throw new RuntimeException("This entity cannot be ticked.")
   }
 }

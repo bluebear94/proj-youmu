@@ -8,7 +8,7 @@ import net.fluffy8x.thsch.base.{ Vector2D, BoundsRect }
  * @author Fluffy8x
  */
 class CollisionStructure extends Iterable[Collidable] {
-  var map: IntMap[(Set[Collidable], QuadTree)]
+  var map: IntMap[(Set[Collidable], QuadTree)] = IntMap.empty
   def getByCC(c: CollisionClass) = map(c.id)
   def +=(c: Collidable) = c.hitbox match {
     case l: Line => getByCC(c.collisionClass)._1 += c
@@ -30,10 +30,10 @@ class QuadTree(val boundary: BoundsRect)
   val leafCompactionThreshhold = maxNodesPerLeaf >> 1
   var points: Set[Collidable] = Set.empty
   var isLeaf = true
-  var nw: QuadTree
-  var ne: QuadTree
-  var sw: QuadTree
-  var se: QuadTree
+  var nw: QuadTree = null
+  var ne: QuadTree = null
+  var sw: QuadTree = null
+  var se: QuadTree = null
   def queryBoundsAll(rect: BoundsRect): Set[Collidable] = {
     if (!boundary.intersects(rect)) Set()
     else {

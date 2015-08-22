@@ -26,3 +26,5 @@ libraryDependencies += "org.scala-lang.plugins" % "scala-continuations-library_2
 scalacOptions ++= Seq("-P:continuations:enable", "-Djava.library.path=lib/native", "-feature", "-language:implicitConversions")
 
 javaOptions in run += "-Djava.library.path=lib/native"
+
+fork := true

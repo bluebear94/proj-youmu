@@ -32,6 +32,7 @@ trait LWJGLApplication extends App {
    * Performs one tick of work.
    * @return false if the window should close; true otherwise
    */
+  protected def myinit(): Unit
   protected def work(): Boolean
   protected var c: GLContext = _
   private def init(): Unit = {
@@ -64,6 +65,7 @@ trait LWJGLApplication extends App {
   private def loop(): Unit = {
     c = GLContext.createFromCurrent()
     glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
+    myinit()
     var shouldContinue = true
     while (glfwWindowShouldClose(window) == GL_FALSE && shouldContinue) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

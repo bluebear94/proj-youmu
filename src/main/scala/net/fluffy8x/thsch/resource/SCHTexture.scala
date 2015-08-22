@@ -12,7 +12,7 @@ class SCHTexture(w: Int, h: Int) {
   val height = MathUtil.mathRoundPoT(h)
   val pixels = IntBuffer.allocate(width * height)
   var lastUsed = System.nanoTime
-  def glSet1() = {
+  def glSet() = {
     GL11.glTexImage2D(
       GL11.GL_TEXTURE_2D,
       0,
@@ -24,10 +24,15 @@ class SCHTexture(w: Int, h: Int) {
       GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
       pixels
     )
+    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
+        GL11.GL_REPEAT)
+    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
+        GL11.GL_REPEAT)
+    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
+        GL11.GL_LINEAR)
+    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
+        GL11.GL_LINEAR)
     lastUsed = System.nanoTime
-  }
-  def glSet2() = {
-    
   }
   def size = (width * height) << 2
 }
@@ -50,4 +55,6 @@ object SCHTexture {
     }
     tex
   }
+  val white = new SCHTexture(1, 1)
+  white.pixels.put(0, -1)
 }
