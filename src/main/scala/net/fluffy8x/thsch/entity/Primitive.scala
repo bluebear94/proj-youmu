@@ -28,6 +28,7 @@ class Primitive extends Renderable {
       newVData.limit(ec)
       vdata = newVData
     }
+    if (vc >= ec) elemCount = vc
   }
   def elemCount: Int = ec
   def elemCount_=(ec: Int): Unit = {
@@ -95,13 +96,13 @@ class Primitive extends Renderable {
     println("initialize")
     if (useGL3) {
       vbo = GL15.glGenBuffers
+      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
+      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
       ebo = GL15.glGenBuffers
+      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
+      GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
       vao = GL30.glGenVertexArrays
       texHandle = GL11.glGenTextures
-      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
-      GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
-      GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
       GL30.glBindVertexArray(vao)
       shaderProgram = ShaderProgram(VertexShader, FragmentShader)
       GL30.glBindFragDataLocation(shaderProgram.id, 0, "outColor")
@@ -119,22 +120,25 @@ class Primitive extends Renderable {
           2, GL11.GL_DOUBLE, false, 7 * 8, 0)
     }
   }
-  def _render() =
+  def _render() = {
     println("tick")
     if (useGL3) {
+      println("new")
       texture.glSet()
       if (shaderProgram != null) shaderProgram.use()
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
       GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
       GL11.glDrawElements(primtype.t, vertexCount, GL11.GL_UNSIGNED_INT, 0)
+      println("new")
     } else {
-      primtype.glBegin()
+      println("old")
       texture.glSet()
       blendMode.use()
-      val len = vertexCount
+      primtype.glBegin()
+      val len = elemCount
       var i = 0
       while (i < len) {
-        val PrimVertex(point, uv, color) = apply(i)
+        val PrimVertex(point, uv, color) = apply(elemBuffer.get(i))
         val rawcoords = point +
           view.bounds.p1 +
           position
@@ -148,7 +152,9 @@ class Primitive extends Renderable {
         i += 1
       }
       GL11.glEnd()
+      println("old")
     }
+  }
   override def onDelete(m: EntityManager) = {
     super.onDelete(m)
     shaderProgram.delete()

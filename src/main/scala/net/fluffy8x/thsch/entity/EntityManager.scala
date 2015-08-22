@@ -12,7 +12,7 @@ import scala.collection.mutable.Set
  * @author Fluffy8x
  */
 class EntityManager
-  extends Child[EntityManager, View] with Parent[EntityManager, Renderable] {
+  extends Child[EntityManager, View] {
   // var player: OneOrMore[Player]
   // var enemy: Set[Enemy]
   // var boss: OneOrMore[Boss]

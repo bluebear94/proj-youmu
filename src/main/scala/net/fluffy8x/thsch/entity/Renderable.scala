@@ -10,7 +10,7 @@ import java.nio._
 /**
  * Describes an entity that can be rendered.
  */
-trait Renderable extends Entity with Child[Renderable, EntityManager] {
+trait Renderable extends Entity {
   var position: Vector3D = Vector3D(0, 0, 0)
   var angle: Angle = 0.radians
   var center: Vector3D = Vector3D(0, 0, 0)
@@ -46,7 +46,7 @@ trait Renderable extends Entity with Child[Renderable, EntityManager] {
       }
     }
   }
-  def view = parent.parent
+  def view = manager.parent
   /**
    * Returns the upper left corner based on the current {@link CoordinateBasis}
    * and render priority.
