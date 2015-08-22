@@ -30,6 +30,7 @@ object Diagnostics extends LWJGLApplication {
     triangle(1) = PrimVertex(Vector3D(-1, 1, 0), Vector2D(0, 1), Color(-1))
     triangle(2) = PrimVertex(Vector3D(1, 1, 0), Vector2D(1, 1), Color(-1))
     println(triangle(1))
+    for (i <- 0 until 27) println(triangle.vdata.get(i))
     view = new View(
         BoundsRect(Vector2D(0, 0), Vector2D(640, 480)),
         IdentityTransformer,

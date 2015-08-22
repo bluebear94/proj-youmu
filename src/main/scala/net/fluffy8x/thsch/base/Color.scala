@@ -11,12 +11,12 @@ import java.nio.FloatBuffer
  * @author Fluffy8x
  */
 case class Color(rgba: Int) extends AnyVal {
-  def a = (rgba >>> 24).toByte
-  def r = (rgba >>> 16).toByte
-  def g = (rgba >>> 8).toByte
-  def b = rgba.toByte
+  def a = (rgba >>> 24).toShort & 255
+  def r = (rgba >>> 16).toShort & 255
+  def g = (rgba >>> 8).toShort & 255
+  def b = rgba.toShort & 255
   def toAWT = new java.awt.Color(rgba)
-  def set() = GL11.glColor4ub(r, b, g, a)
+  def set() = GL11.glColor4ub(r.toByte, b.toByte, g.toByte, a.toByte)
 }
 
 object Color {
@@ -27,10 +27,10 @@ object Color {
     val buf = FloatBuffer.allocate(4)
     GL11.glGetFloat(GL11.GL_CURRENT_COLOR, buf)
     Color(
-      (buf.get(0) * 255).toByte,
-      (buf.get(1) * 255).toByte,
-      (buf.get(2) * 255).toByte,
-      (buf.get(3) * 255).toByte
+      (buf.get(0) * 255).toShort,
+      (buf.get(1) * 255).toShort,
+      (buf.get(2) * 255).toShort,
+      (buf.get(3) * 255).toShort
     )
   }
   def fromAWT(c: java.awt.Color) = Color(c.getRGB)
