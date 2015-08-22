@@ -103,21 +103,22 @@ class Primitive extends Renderable {
       GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
       vao = GL30.glGenVertexArrays
       texHandle = GL11.glGenTextures
+      GL11.glBindTexture(GL11.GL_TEXTURE_2D, texHandle)
       GL30.glBindVertexArray(vao)
       shaderProgram = ShaderProgram(VertexShader, FragmentShader)
       GL30.glBindFragDataLocation(shaderProgram.id, 0, "outColor")
       val positionAttribute = shaderProgram.attribute("position")
       GL20.glEnableVertexAttribArray(positionAttribute)
       GL20.glVertexAttribPointer(positionAttribute,
-          3, GL11.GL_DOUBLE, false, 6 * 8, 0)
+          3, GL11.GL_DOUBLE, false, 9 * 8, 0)
       val colorAttribute = shaderProgram.attribute("color")
       GL20.glEnableVertexAttribArray(colorAttribute)
       GL20.glVertexAttribPointer(colorAttribute,
-          GL12.GL_BGRA, GL11.GL_DOUBLE, false, 5 * 8, 0)
+          GL12.GL_BGRA, GL11.GL_DOUBLE, false, 9 * 8, 3 * 8)
       val textureAttribute = shaderProgram.attribute("uv")
       GL20.glEnableVertexAttribArray(textureAttribute)
       GL20.glVertexAttribPointer(textureAttribute,
-          2, GL11.GL_DOUBLE, false, 7 * 8, 0)
+          2, GL11.GL_DOUBLE, false, 9 * 8, 7 * 8)
     }
   }
   def _render() = {
@@ -160,6 +161,7 @@ class Primitive extends Renderable {
     shaderProgram.delete()
     GL15.glDeleteBuffers(vbo)
     GL15.glDeleteBuffers(ebo)
+    GL11.glDeleteTextures(texHandle)
     GL30.glDeleteVertexArrays(vao)
   }
 }
