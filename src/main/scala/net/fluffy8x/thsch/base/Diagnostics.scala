@@ -27,9 +27,9 @@ object Diagnostics extends LWJGLApplication {
     triangle.vertexCount = 3
     triangle.elemCount = 3
     val color = Color(32, 200, 64)
-    triangle(0) = PrimVertex(Vector3D(0.5, -1, 0), Vector2D(0, 0), color)
+    triangle(0) = PrimVertex(Vector3D(0.3, -1, 0), Vector2D(0, 0), color)
     triangle(1) = PrimVertex(Vector3D(-1, 1, 0), Vector2D(0, 1), color)
-    triangle(2) = PrimVertex(Vector3D(1, 1, 1), Vector2D(1, 1), color)
+    triangle(2) = PrimVertex(Vector3D(1, 1, 0), Vector2D(1, 1), color)
     view = new View(
         BoundsRect(Vector2D(0, 0), Vector2D(640, 480)),
         IdentityTransformer,
@@ -39,9 +39,17 @@ object Diagnostics extends LWJGLApplication {
     em = new EntityManager
     view.register(em)
     triangle.register(em)
+    println(em.renderables)
   }
   def work() = {
     em.renderAll()
+    /*GL11.glBegin(GL11.GL_QUADS)
+    GL11.glColor3d(1.0, 1.0, 1.0)
+    GL11.glVertex2d(-0.5, -0.5)
+    GL11.glVertex2d(-0.5, 0.5)
+    GL11.glVertex2d(0.5, 0.5)
+    GL11.glVertex2d(0.5, -0.5)*/
+    GL11.glEnd()
     true
   }
   protected def width: Int = 640

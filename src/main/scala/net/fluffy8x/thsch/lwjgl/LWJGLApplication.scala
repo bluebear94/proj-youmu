@@ -69,9 +69,9 @@ trait LWJGLApplication extends App {
     var shouldContinue = true
     while (glfwWindowShouldClose(window) == GL_FALSE && shouldContinue) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+      shouldContinue = work() // Hot salmon
       glfwSwapBuffers(window)
       glfwPollEvents()
-      shouldContinue = work() // Hot salmon
     }
   }
   println(s"Hello LWJGL ${Sys.getVersion}!")
