@@ -6,18 +6,16 @@ import org.lwjgl.opengl._
  * @author bluebear94
  */
 trait Transformer {
-  def matrix: Array[Array[Double]]
+  def matrix: Matrix
 }
 
 case object IdentityTransformer extends Transformer {
-  def matrix = Array(
-    Array(1, 0, 0, 0),
-    Array(0, 1, 0, 0),
-    Array(0, 0, 1, 0),
-    Array(0, 0, 0, 1)
-  )
+  def matrix = Matrix.identity
 }
 
+/**
+ * Indicates an error in compiling a shader.
+ */
 class ShaderCompileFailedError(
     handle: Int, source: String, log: String)
     extends Error {
@@ -61,43 +59,46 @@ trait Shader {
    * give up and not apply the shader
    */
   def fallback: Option[Shader] = None
-  lazy val id = {
+  lazy val id: Int = {
     val handle = GL20.glCreateShader(GL20.GL_VERTEX_SHADER)
     val fullSource = s"#version $version\n$src"
     GL20.glShaderSource(handle, fullSource)
     GL20.glCompileShader(handle)
-    if (GL20.glGetShaderi(handle, GL20.GL_COMPILE_STATUS) == 0)
-      throw new ShaderCompileFailedError(handle, fullSource,
-        GL20.glGetShaderInfoLog(handle))
-    handle
+    if (GL20.glGetShaderi(handle, GL20.GL_COMPILE_STATUS) == 0){
+      fallback match {
+        case Some(theFallback) =>
+          theFallback.id
+        case None =>
+          throw new ShaderCompileFailedError(handle, fullSource,
+              GL20.glGetShaderInfoLog(handle))
+      }
+    }
+    else handle
   }
   def delete() = GL20.glDeleteShader(id)
 }
 
 case object VertexShader extends Shader {
-  def version = 130
+  def version = 120
   def src = s"""
-    in vec3 position;
-    in vec2 uv;
-    in vec4 color;
-    out vec2 UV;
-    out vec4 Color;
+    attribute vec3 position;
+    attribute vec2 uv;
+    attribute vec4 color;
+    varying vec4 fColor;
     void main() {
-      Color = color;
-      UV = uv;
       gl_Position = vec4(position, 1.0);
+      fColor = color;
     }
     """
 }
 case object FragmentShader extends Shader {
-  def version = 130
+  def version = 120
   def src = s"""
-    in vec3 Color;
-    in vec2 UV;
-    out vec4 outColor;
+    varying vec4 fColor;
+    attribute vec2 UV;
     uniform sampler2D tex;
     void main() {
-      outColor = texture(tex, UV) * vec4(Color, 1.0);
+      gl_FragColor = fColor;
     } 
     """
 }

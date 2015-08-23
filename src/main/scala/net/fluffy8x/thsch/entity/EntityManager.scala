@@ -22,7 +22,8 @@ class EntityManager
   var entities: Set[Entity] = Set.empty
   def tick() = {
     renderables foreach {
-      case (renderPriority, objs) => EntityManager.removeAllDeleted(objs)
+      case (renderPriority, objs) =>
+        EntityManager.removeAllDeleted(objs)
     }
     EntityManager.tickOn(entities)
     EntityManager.removeAllDeleted(entities)

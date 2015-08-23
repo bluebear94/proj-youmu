@@ -1,6 +1,6 @@
 package net.fluffy8x.thsch.entity
 
-@deprecated("0.2", "This was a stupid idea.")
+@deprecated("This was a stupid idea.", "0.2")
 /**
  * Represents an object that cannot be ticked (as there is nothing
  * to tick them).

@@ -18,15 +18,24 @@ case class Vector2D(x: Double, y: Double, r: Double, t: Angle) {
   def +(v: Vector2D) = Vector2D(x + v.x, y + v.y)
   def -(v: Vector2D) = Vector2D(x - v.x, y - v.y)
   def unary_- = Vector2D(-x, -y, r, 180.degrees + t)
+  /**
+   * Computes the dot product of two vectors.
+   */
   def dot(v: Vector2D) = x * v.x + y * v.y
   def *(s: Double) =
     if (s >= 0) Vector2D(x * s, y * s, r * s, t)
     else Vector2D(x * s, y * s, -r * s, 180.degrees + t)
   def /(s: Double) = this * (1 / s)
+  /**
+   * Computes the two-dimensional cross product of two vectors.
+   */
   def cross2D(v: Vector2D) = x * v.y - y * v.x
   def proj(that: Vector2D) =
 	  that * ((this dot that) / (that dot that))
   def to3 = Vector3D(x, y, 0, r, r, t, 90.degrees)
+  /**
+   * Returns the string representation of this vector used by GLSL.
+   */
   def glsl = s"vec2($x, $y)"
   override def toString = s"[[\n  X = $x\n  Y = $y\n  R = $r\n  T = $t\n]]"
 }
@@ -63,17 +72,29 @@ case class Vector3D(x: Double, y: Double, z: Double, r: Double, rho: Double, the
   def +(v: Vector3D) = Vector3D(x + v.x, y + v.y, z + v.z)
   def -(v: Vector3D) = Vector3D(x - v.x, y - v.y, z - v.z)
   def unary_- = Vector3D(-x, -y, -z, r, rho, 180.degrees + theta, 180.degrees + phi)
+  /**
+   * Computes the dot product of two vectors.
+   */
   def dot(v: Vector3D) = x * v.x + y * v.y + z * v.z
   def *(s: Double) =
     if (s >= 0) Vector3D(x * s, y * s, z * s, r * s, rho * s, theta, phi)
     else Vector3D(x * s, y * s, z * s, -r * s, -rho * s, 180.degrees + theta, 180.degrees + phi)
   def /(s: Double) = this * (1 / s)
+  /**
+   * Computes the cross product of two vectors.
+   */
   def cross(v: Vector3D) =
     Vector3D(
         y * v.z - z * v.y,
         z * v.x - x * v.z,
         x * v.y - y * v.x)
+  def proj(that: Vector3D) =
+    that * ((this dot that) / (that dot that))
   def to2 = Vector2D(x, y, r, theta)
+  def to4 = Vector4D(x, y, z, 1)
+  /**
+   * Returns the string representation of this vector used by GLSL.
+   */
   def glsl = s"vec3($x, $y, $z)"
   override def toString =
     s"[[\n  X = $x\n  Y = $y\n  Z = $z\n  R = $r\n  RHO = $rho\n  THETA = $theta\n  PHI = $phi\n]]"
@@ -137,4 +158,36 @@ case class BoundsRect(p1: Vector2D, p2: Vector2D) {
     case l: Line => intersects(l)
     case c: Circle => intersects(c)
   }
+}
+
+/**
+ * A four-dimensional vector.
+ * This is used only for dealing with homogeneous coordinates,
+ * so no angle information is stored.
+ */
+case class Vector4D(x: Double, y: Double, z: Double, w: Double) {
+  // Note! p.copy(x = 2)
+  def withX(newX: Double) = Vector4D(newX, y, z, w)
+  def withY(newY: Double) = Vector4D(x, newY, z, w)
+  def withZ(newZ: Double) = Vector4D(x, y, newZ, w)
+  def withW(newW: Double) = Vector4D(x, y, z, newW)
+  def +(v: Vector4D) = Vector4D(x + v.x, y + v.y, z + v.z, w + v.w)
+  def -(v: Vector4D) = Vector4D(x - v.x, y - v.y, z - v.z, w - v.w)
+  def unary_- = Vector4D(-x, -y, -z, -w)
+  /**
+   * Computes the dot product of two vectors.
+   */
+  def dot(v: Vector4D) = x * v.x + y * v.y + z * v.z  + w * v.w
+  def *(s: Double) =
+    Vector4D(x * s, y * s, z * s, w * s)
+  def /(s: Double) = this * (1 / s)
+  def proj(that: Vector4D) =
+    that * ((this dot that) / (that dot that))
+  /**
+   * Returns the string representation of this vector used by GLSL.
+   */
+  def glsl = s"vec4($x, $y, $z, $w)"
+  override def toString =
+    s"[[\n  X = $x\n  Y = $y\n  Z = $z\n  W = $w\n]]"
+  def to3 = Vector3D(x / w, y / w, z / w)
 }

@@ -5,6 +5,9 @@ import scala.collection.mutable._
 import net.fluffy8x.thsch.base.{ Vector2D, BoundsRect }
 
 /**
+ * A structure used to store hitboxes.
+ * Each collision class stores a set of linear hitboxes
+ * and a {@link QuadTree} of circular hitboxes.
  * @author Fluffy8x
  */
 class CollisionStructure extends Iterable[Collidable] {
@@ -30,10 +33,10 @@ class QuadTree(val boundary: BoundsRect)
   val leafCompactionThreshhold = maxNodesPerLeaf >> 1
   var points: Set[Collidable] = Set.empty
   var isLeaf = true
-  var nw: QuadTree = null
-  var ne: QuadTree = null
-  var sw: QuadTree = null
-  var se: QuadTree = null
+  private var nw: QuadTree = null
+  private var ne: QuadTree = null
+  private var sw: QuadTree = null
+  private var se: QuadTree = null
   def queryBoundsAll(rect: BoundsRect): Set[Collidable] = {
     if (!boundary.intersects(rect)) Set()
     else {

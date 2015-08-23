@@ -10,12 +10,12 @@ import java.nio.FloatBuffer
  * the overhead of a reference class.
  * @author Fluffy8x
  */
-case class Color(rgba: Int) extends AnyVal {
-  def a = (rgba >>> 24).toShort & 255
-  def r = (rgba >>> 16).toShort & 255
-  def g = (rgba >>> 8).toShort & 255
-  def b = rgba.toShort & 255
-  def toAWT = new java.awt.Color(rgba)
+case class Color(argb: Int) extends AnyVal {
+  def a = (argb >>> 24).toShort & 255
+  def r = (argb >>> 16).toShort & 255
+  def g = (argb >>> 8).toShort & 255
+  def b = argb.toShort & 255
+  def toAWT = new java.awt.Color(argb)
   def set() = GL11.glColor4ub(r.toByte, b.toByte, g.toByte, a.toByte)
 }
 

@@ -6,12 +6,23 @@ import org.lwjgl.system.MathUtil
 import com.sksamuel.scrimage._
 import java.io.File
 
+/**
+ * A texture resource.
+ * While using non-power-of-two dimensions is allowed,
+ * it is not advised if you intend to support older
+ * GPUs that do not support them.
+ */
 class SCHTexture(w: Int, h: Int) {
-  // round to powers of two
-  val width = MathUtil.mathRoundPoT(w)
-  val height = MathUtil.mathRoundPoT(h)
+  val width = w
+  val height = h
   val pixels = IntBuffer.allocate(width * height)
+  /**
+   * The time at which this texture was last used.
+   */
   var lastUsed = System.nanoTime
+  /**
+   * Sets this as the current texture used by OpenGL.
+   */
   def glSet() = {
     GL11.glTexImage2D(
       GL11.GL_TEXTURE_2D,

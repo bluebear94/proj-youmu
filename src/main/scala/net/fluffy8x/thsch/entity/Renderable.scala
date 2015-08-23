@@ -106,6 +106,14 @@ object BlendMode {
       GL14.GL_FUNC_ADD, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 }
 
+/**
+ * A usage mode for VBOS.
+ * <code>StaticDraw</code>: for objects whose data never change
+ * <code>DynamicDraw</code>: for objects whose data change
+ * occasionally
+ * <code>StreamDraw</code> (default for {@link Primitive}): for objects
+ * whose data change every frame
+ */
 case class Usage(u: Int) extends AnyVal
 
 object Usage {

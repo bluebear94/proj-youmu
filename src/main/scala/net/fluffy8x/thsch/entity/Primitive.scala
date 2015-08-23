@@ -18,6 +18,7 @@ class Primitive extends Renderable {
   private var vc = 0
   private var ec = 0
   val ENTRIES_PER_VERTEX = 9
+  val VERTEX_SIZE = ENTRIES_PER_VERTEX << 3
   def vertexCount: Int = vc
   def vertexCount_=(vc: Int): Unit = {
     this.vc = vc
@@ -110,15 +111,16 @@ class Primitive extends Renderable {
       val positionAttribute = shaderProgram.attribute("position")
       GL20.glEnableVertexAttribArray(positionAttribute)
       GL20.glVertexAttribPointer(positionAttribute,
-          3, GL11.GL_DOUBLE, false, 9 * 8, 0)
+          3, GL11.GL_DOUBLE, false, VERTEX_SIZE, 0)
       val colorAttribute = shaderProgram.attribute("color")
       GL20.glEnableVertexAttribArray(colorAttribute)
       GL20.glVertexAttribPointer(colorAttribute,
-          GL12.GL_BGRA, GL11.GL_DOUBLE, false, 9 * 8, 3 * 8)
+          GL12.GL_BGRA, GL11.GL_DOUBLE, false, VERTEX_SIZE, 3 * 8)
       val textureAttribute = shaderProgram.attribute("uv")
       GL20.glEnableVertexAttribArray(textureAttribute)
       GL20.glVertexAttribPointer(textureAttribute,
-          2, GL11.GL_DOUBLE, false, 9 * 8, 7 * 8)
+          2, GL11.GL_DOUBLE, false, VERTEX_SIZE, 7 * 8)
+      GL11.glEnable(GL11.GL_BLEND)
     }
   }
   def _render() = {
@@ -126,7 +128,8 @@ class Primitive extends Renderable {
     if (useGL3) {
       println("new")
       texture.glSet()
-      if (shaderProgram != null) shaderProgram.use()
+      blendMode.use()
+      shaderProgram.use()
       GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
       GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
       GL11.glDrawElements(primtype.t, vertexCount, GL11.GL_UNSIGNED_INT, 0)
