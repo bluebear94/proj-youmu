@@ -84,10 +84,13 @@ case object VertexShader extends Shader {
     attribute vec3 position;
     attribute vec2 uv;
     attribute vec4 color;
+    varying vec2 fUV;
     varying vec4 fColor;
+    uniform mat4 mvp;
     void main() {
-      gl_Position = vec4(position, 1.0);
+      gl_Position = mvp * vec4(position, 1.0);
       fColor = color;
+      fUV = uv;
     }
     """
 }
@@ -95,10 +98,11 @@ case object FragmentShader extends Shader {
   def version = 120
   def src = s"""
     varying vec4 fColor;
-    attribute vec2 UV;
+    varying vec2 fUV;
     uniform sampler2D tex;
     void main() {
-      gl_FragColor = fColor;
+      vec2 resUV = vec2(fUV.x, 1.0 - fUV.y);
+      gl_FragColor = fColor * texture2D(tex, resUV);
     } 
     """
 }
