@@ -27,7 +27,9 @@ class ShaderCompileFailedError(
 case class ShaderProgram(shaders: Shader*) {
   lazy val id = {
     val handle = GL20.glCreateProgram
-    for (shader <- shaders) GL20.glAttachShader(handle, shader.id)
+    for (shader <- shaders)
+      if (shader.id != -1)
+        GL20.glAttachShader(handle, shader.id)
     GL20.glLinkProgram(handle)
     handle
   }
@@ -53,12 +55,13 @@ trait Shader {
   /**
    * Specification of a fallback shader if
    * this one is not supported.
-   * @return <code>Some(shader)</code> if this we should resort
+   * @return <code>Right(shader)</code> if this we should resort
    * to a fallback if the GLSL version is less than
-   * <code>version</code>, or <code>None</code> if we should
-   * give up and not apply the shader
+   * <code>version</code>, <code>Left(true)</code> if we should
+   * give up and not apply the shader, or <code>Left(false)</code>
+   * if we should crash
    */
-  def fallback: Option[Shader] = None
+  def fallback: Either[Boolean, Shader] = Left(false)
   lazy val id: Int = {
     val handle = GL20.glCreateShader(GL20.GL_VERTEX_SHADER)
     val fullSource = s"#version $version\n$src"
@@ -66,9 +69,10 @@ trait Shader {
     GL20.glCompileShader(handle)
     if (GL20.glGetShaderi(handle, GL20.GL_COMPILE_STATUS) == 0){
       fallback match {
-        case Some(theFallback) =>
+        case Right(theFallback) =>
           theFallback.id
-        case None =>
+        case Left(true) => -1
+        case Left(false) =>
           throw new ShaderCompileFailedError(handle, fullSource,
               GL20.glGetShaderInfoLog(handle))
       }
