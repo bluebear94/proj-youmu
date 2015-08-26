@@ -89,8 +89,8 @@ case class BlendMode(
   rgbEquation: Int, rgbSfactor: Int, rgbDfactor: Int,
   aEquation: Int, aSfactor: Int, aDfactor: Int) {
   def use(): Unit = {
-    GL14.glBlendEquation(rgbEquation)
-    //GL20.glBlendEquationSeparate(rgbEquation, aEquation)
+    if (useGL3) GL20.glBlendEquationSeparate(rgbEquation, aEquation)
+    else GL14.glBlendEquation(rgbEquation)
     GL14.glBlendFuncSeparate(rgbSfactor, rgbDfactor, aSfactor, aDfactor)
   }
 }

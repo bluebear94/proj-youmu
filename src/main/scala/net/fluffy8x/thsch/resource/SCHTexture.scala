@@ -1,6 +1,7 @@
 package net.fluffy8x.thsch.resource
 
 import java.nio._
+import org.lwjgl._
 import org.lwjgl.opengl._
 import org.lwjgl.system.MathUtil
 import com.sksamuel.scrimage._
@@ -15,7 +16,7 @@ import java.io.File
 class SCHTexture(w: Int, h: Int) {
   val width = w
   val height = h
-  val pixels = IntBuffer.allocate(width * height)
+  val pixels = BufferUtils.createIntBuffer(width * height)
   /**
    * The time at which this texture was last used.
    */

@@ -25,7 +25,7 @@ object Color {
   def apply(r: Int, g: Int, b: Int): Color = apply(r, g, b, 255)
   def get = {
     val buf = FloatBuffer.allocate(4)
-    GL11.glGetFloat(GL11.GL_CURRENT_COLOR, buf)
+    GL11.glGetFloatv(GL11.GL_CURRENT_COLOR, buf)
     Color(
       (buf.get(0) * 255).toShort,
       (buf.get(1) * 255).toShort,

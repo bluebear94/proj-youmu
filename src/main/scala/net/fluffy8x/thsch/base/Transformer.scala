@@ -35,6 +35,7 @@ case class ShaderProgram(shaders: Shader*) {
   }
   def use() = GL20.glUseProgram(id)
   def attribute(name: String) = GL20.glGetAttribLocation(id, name)
+  def uniform(name: String) = GL20.glGetUniformLocation(id, name)
   def delete() = GL20.glDeleteProgram(id)
 }
 

@@ -2,6 +2,7 @@ package net.fluffy8x.thsch.entity
 
 import net.fluffy8x.thsch.base._
 import net.fluffy8x.thsch.syntax._
+import org.lwjgl._
 import org.lwjgl.opengl._
 import net.fluffy8x.thsch.resource._
 import scala.collection.mutable.Set
@@ -13,8 +14,8 @@ case class PrimVertex(point: Vector3D, uv: Vector2D, color: Color)
 // Refer to later: glBegin glEnd glVertex* glTexCoord*
 
 class Primitive extends Renderable {
-  var vdata: DoubleBuffer = DoubleBuffer.allocate(64)
-  var elemBuffer: IntBuffer = IntBuffer.allocate(64)
+  var vdata: DoubleBuffer = BufferUtils.createDoubleBuffer(64)
+  var elemBuffer: IntBuffer = BufferUtils.createIntBuffer(64)
   private var vc = 0
   private var ec = 0
   val ENTRIES_PER_VERTEX = 9
@@ -25,7 +26,7 @@ class Primitive extends Renderable {
     val ec = vc * ENTRIES_PER_VERTEX
     if (ec <= vdata.capacity) vdata.limit(ec)
     else {
-      val newVData = DoubleBuffer.allocate(vdata.capacity << 1)
+      val newVData = BufferUtils.createDoubleBuffer(vdata.capacity << 1)
       newVData.limit(ec)
       vdata = newVData
     }
@@ -37,7 +38,7 @@ class Primitive extends Renderable {
     this.ec = ec
     if (ec <= elemBuffer.capacity) elemBuffer.limit(ec)
     else {
-      val newEBuffer = IntBuffer.allocate(elemBuffer.capacity << 1)
+      val newEBuffer = BufferUtils.createIntBuffer(elemBuffer.capacity << 1)
       newEBuffer.limit(ec)
       elemBuffer = newEBuffer
     }
@@ -84,9 +85,12 @@ class Primitive extends Renderable {
   var primtype: PrimType = PrimType.Triangles
   var texture: SCHTexture = SCHTexture.white
   var blendMode: BlendMode = BlendMode.Alpha
+  def refreshBuffers() = if (useGL3) {
+    GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vdata, usage.u)
+    GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
+  }
   // Begin GL3.x specific fields
   private var vbo: Int = -1
-  private var vao: Int = -1
   private var ebo: Int = -1
   private var shaderProgram: ShaderProgram = null
   private var texHandle: Int = -1
@@ -102,12 +106,33 @@ class Primitive extends Renderable {
       ebo = GL15.glGenBuffers
       GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
       GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elemBuffer, usage.u)
-      vao = GL30.glGenVertexArrays
       texHandle = GL11.glGenTextures
       GL11.glBindTexture(GL11.GL_TEXTURE_2D, texHandle)
-      GL30.glBindVertexArray(vao)
       shaderProgram = ShaderProgram(VertexShader, FragmentShader)
-      GL30.glBindFragDataLocation(shaderProgram.id, 0, "outColor")
+      GL30.glBindFragDataLocation(shaderProgram.id, 0, "gl_FragColor")
+      /*val positionAttribute = shaderProgram.attribute("position")
+      GL20.glEnableVertexAttribArray(positionAttribute)
+      GL20.glVertexAttribPointer(positionAttribute,
+          3, GL11.GL_DOUBLE, false, VERTEX_SIZE, 0)
+      val colorAttribute = shaderProgram.attribute("color")
+      GL20.glEnableVertexAttribArray(colorAttribute)
+      GL20.glVertexAttribPointer(colorAttribute,
+          GL12.GL_BGRA, GL11.GL_DOUBLE, false, VERTEX_SIZE, 5 * 8)
+      val textureAttribute = shaderProgram.attribute("uv")
+      GL20.glEnableVertexAttribArray(textureAttribute)
+      GL20.glVertexAttribPointer(textureAttribute,
+          2, GL11.GL_DOUBLE, false, VERTEX_SIZE, 3 * 8)*/
+    }
+    GL11.glEnable(GL11.GL_BLEND)
+  }
+  def _render() = {
+    if (useGL3) {
+      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
+      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
+      GL11.glBindTexture(GL11.GL_TEXTURE_2D, texHandle)
+      texture.glSet()
+      blendMode.use()
+      shaderProgram.use()
       val positionAttribute = shaderProgram.attribute("position")
       GL20.glEnableVertexAttribArray(positionAttribute)
       GL20.glVertexAttribPointer(positionAttribute,
@@ -115,27 +140,16 @@ class Primitive extends Renderable {
       val colorAttribute = shaderProgram.attribute("color")
       GL20.glEnableVertexAttribArray(colorAttribute)
       GL20.glVertexAttribPointer(colorAttribute,
-          GL12.GL_BGRA, GL11.GL_DOUBLE, false, VERTEX_SIZE, 3 * 8)
+          GL12.GL_BGRA, GL11.GL_DOUBLE, false, VERTEX_SIZE, 5 * 8)
       val textureAttribute = shaderProgram.attribute("uv")
       GL20.glEnableVertexAttribArray(textureAttribute)
       GL20.glVertexAttribPointer(textureAttribute,
-          2, GL11.GL_DOUBLE, false, VERTEX_SIZE, 7 * 8)
-      GL11.glEnable(GL11.GL_BLEND)
-    }
-  }
-  def _render() = {
-    println("tick")
-    if (useGL3) {
-      println("new")
-      texture.glSet()
-      blendMode.use()
-      shaderProgram.use()
-      GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
-      GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo)
-      GL11.glDrawElements(primtype.t, vertexCount, GL11.GL_UNSIGNED_INT, 0)
-      println("new")
+          2, GL11.GL_DOUBLE, false, VERTEX_SIZE, 3 * 8)
+      val mvpUniform = shaderProgram.uniform("mvp")
+      GL20.glUniformMatrix4fv(mvpUniform, false, Matrix.identity.toFloatBuffer)
+      //GL11.glDrawElements(primtype.t, elemBuffer)
+      GL11.glDrawElements(primtype.t, elemCount, GL11.GL_UNSIGNED_INT, 0)
     } else {
-      println("old")
       texture.glSet()
       blendMode.use()
       primtype.glBegin()
@@ -149,14 +163,13 @@ class Primitive extends Renderable {
         val cr = rawcoords - center
         val r = cr.r
         val theta = cr.theta
-        val coords = center.to2 + Vector2D.polar(r, theta + angle)
+        val coords = center + Vector3D.cylindrical(r, theta + angle, 0)
         color.set()
         GL11.glTexCoord2d(uv.x, uv.y)
-        GL11.glVertex2d(coords.x, coords.y)
+        GL11.glVertex3d(coords.x, coords.y, coords.z)
         i += 1
       }
       GL11.glEnd()
-      println("old")
     }
   }
   override def onDelete(m: EntityManager) = {
@@ -165,6 +178,6 @@ class Primitive extends Renderable {
     GL15.glDeleteBuffers(vbo)
     GL15.glDeleteBuffers(ebo)
     GL11.glDeleteTextures(texHandle)
-    GL30.glDeleteVertexArrays(vao)
+    //GL30.glDeleteVertexArrays(vao)
   }
 }

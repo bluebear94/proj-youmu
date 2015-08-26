@@ -34,7 +34,7 @@ trait LWJGLApplication extends App {
    */
   protected def myinit(): Unit
   protected def work(): Boolean
-  protected var c: GLContext = _
+  protected var c: GLCapabilities = _
   private def init(): Unit = {
     errorCallback = errorCallbackPrint(System.err)
     glfwSetErrorCallback(errorCallback)
@@ -63,7 +63,7 @@ trait LWJGLApplication extends App {
     glfwShowWindow(window)
   }
   private def loop(): Unit = {
-    c = GLContext.createFromCurrent()
+    c = GL.createCapabilities
     glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
     myinit()
     var shouldContinue = true

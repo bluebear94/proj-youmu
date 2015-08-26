@@ -7,13 +7,13 @@ import net.fluffy8x.thsch.base._
 
 object Diagnostics extends LWJGLApplication {
   def isDX10 = {
-    c.getCapabilities.OpenGL30 ||
+    c.OpenGL30 ||
       GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE) >= 8192
   }
   def npotSupportLevel = {
     if (isDX10) NPOTSupportLevel.Full
-    else if (c.getCapabilities.OpenGL20 ||
-      c.getCapabilities.GL_ARB_texture_non_power_of_two)
+    else if (c.OpenGL20 ||
+      c.GL_ARB_texture_non_power_of_two)
       NPOTSupportLevel.Partial
     else NPOTSupportLevel.None
   }
@@ -26,8 +26,8 @@ object Diagnostics extends LWJGLApplication {
     triangle = new Primitive
     triangle.vertexCount = 3
     triangle.elemCount = 3
-    val color = Color(32, 200, 64)
-    triangle(0) = PrimVertex(Vector3D(0.3, -1, 0), Vector2D(0, 0), color)
+    val color = Color(32, 255, 64)
+    triangle(0) = PrimVertex(Vector3D(0.5, -1, 0), Vector2D(0, 0), color)
     triangle(1) = PrimVertex(Vector3D(-1, 1, 0), Vector2D(0, 1), color)
     triangle(2) = PrimVertex(Vector3D(1, 1, 0), Vector2D(1, 1), color)
     view = new View(
@@ -39,7 +39,7 @@ object Diagnostics extends LWJGLApplication {
     em = new EntityManager
     view.register(em)
     triangle.register(em)
-    println(em.renderables)
+    for (i <- 0 until 3) println(triangle(i))
   }
   def work() = {
     em.renderAll()
